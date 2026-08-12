@@ -1,6 +1,10 @@
 # Linear Multi-Workspace Setup
 
-An open Agent Skill for connecting an AI agent to several Linear workspaces without silently sharing or replacing authentication.
+[![skills.sh](https://skills.sh/b/switmer/linear-multi-workspace-setup)](https://skills.sh/switmer/linear-multi-workspace-setup)
+
+Stop switching Linear logins when your agents move between workspaces.
+
+This open Agent Skill helps Codex and Claude Code connect to several Linear workspaces without silently sharing or replacing authentication.
 
 It guides Codex or Claude Code through a safe setup:
 
@@ -14,14 +18,20 @@ It guides Codex or Claude Code through a safe setup:
 
 ## Install
 
+[View the skill on skills.sh](https://www.skills.sh/switmer/linear-multi-workspace-setup/linear-multi-workspace-setup)
+
 ```bash
 npx skills add switmer/linear-multi-workspace-setup \
   --skill linear-multi-workspace-setup
 ```
 
-Then ask your agent:
+If you know which workspaces you want, ask:
 
 > Set up my Roster, HopperX, and personal Linear workspaces. Dock411 uses Jira.
+
+If you are unsure, ask:
+
+> Help me set up the Linear workspaces I want to use in Codex. I do not know the full list, so help me discover them one at a time.
 
 The agent will show a proposed map before changing anything. It will then guide you through each OAuth screen and report which connections are verified, failed, or still unverified.
 
@@ -54,6 +64,8 @@ When Linear exposes `get_workspace`, the skill records its immutable workspace I
 macOS tested. Codex and Claude Code supported. Other MCP clients may work but are unverified.
 
 Local named MCP connections do not change the hosted ChatGPT Linear plugin.
+
+[Report a bug or confusing behavior](https://github.com/switmer/linear-multi-workspace-setup/issues/new).
 
 ## Documentation
 
