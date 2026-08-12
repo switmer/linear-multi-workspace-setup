@@ -23,6 +23,8 @@ Linear documents a fallback through `mcp-remote`: give each named server a separ
 
 Resolve and pin a current `mcp-remote` version before adding the stdio servers. Pass the unique directory as an environment variable to each server. Never reuse a directory. Authenticate one at a time, then repeat the full fresh-process verification sequence.
 
+When reporting this recommendation, state that it is Linear's documented fallback and that this skill only provides setup guidance; it does not implement or manage the fallback.
+
 Do not delete a shared `~/.mcp-auth` tree. If cleanup is needed, confirm and remove only the exact failed workspace directory.
 
 ## A bundled plugin duplicates a named server

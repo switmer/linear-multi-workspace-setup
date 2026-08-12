@@ -1,0 +1,48 @@
+{
+  "skill_name": "linear-multi-workspace-setup",
+  "evals": [
+    {
+      "id": 1,
+      "name": "mixed-trackers",
+      "prompt": "Plan a local Codex setup for Roster in Linear, HopperX in Linear, and Dock411 in Jira. No configuration has been changed yet. Do not run OAuth or edit files. Return the proposed map, safe setup sequence, and final report shape.",
+      "expected_output": "A plan with named Linear servers for Roster and HopperX, no Linear server for Dock411, user-controlled OAuth, read-only verification, write approval, and explicit Jira routing.",
+      "assertions": [
+        "The plan proposes a named Linear MCP connection for Roster.",
+        "The plan proposes a named Linear MCP connection for HopperX.",
+        "The plan does not propose a Linear MCP connection for Dock411.",
+        "Dock411 is explicitly routed to Jira.",
+        "The plan does not inspect or request credential contents.",
+        "The plan does not perform or claim completion of OAuth."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "missing-get-workspace",
+      "prompt": "Audit a generic local MCP client's two named Linear connections. The client exposes list_teams but has no get_workspace tool. linear-roster returns [Roster App]. linear-personal returns [SWD-Projects]. The user confirms those team lists look right. Do not write data or change configuration. Report what is and is not proven.",
+      "expected_output": "The complete team lists are recorded and user-confirmed, but workspace identity and credential isolation remain unverified because no stable workspace identifier is available.",
+      "assertions": [
+        "The output records both complete team lists.",
+        "The output notes the user's confirmation.",
+        "Workspace identity is marked unverified.",
+        "Credential isolation is marked unverified.",
+        "Team names are not treated as proof of workspace identity.",
+        "The setup is not declared fully verified or proven.",
+        "Compatibility with the generic MCP client is explicitly marked unverified."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "collapsed-credentials",
+      "prompt": "Audit two Claude Code MCP servers. linear-roster returns workspace ID 890f20af with name Roster App. After authenticating linear-hopperx, both linear-roster and linear-hopperx return workspace ID a16dc133 with name HopperAI. No writes have happened. Explain the next action and provide the audit result.",
+      "expected_output": "The audit fails, stops before writes, reports that the earlier connection changed and both names now share one identity, and recommends separate authentication contexts such as distinct MCP_REMOTE_CONFIG_DIR paths where supported.",
+      "assertions": [
+        "The output identifies that linear-roster changed from its original workspace ID.",
+        "The output identifies that both server names now resolve to the same workspace ID.",
+        "The agent stops before any Linear write.",
+        "The setup is reported as failed or not isolated.",
+        "The recommendation uses separate authentication contexts.",
+        "MCP_REMOTE_CONFIG_DIR is described as a documented fallback, not as functionality implemented by the skill."
+      ]
+    }
+  ]
+}

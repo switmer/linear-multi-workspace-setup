@@ -1,0 +1,22 @@
+[
+  {"query":"Set up my Roster and HopperAI Linear workspaces in Codex so the agent can use both without switching logins.","should_trigger":true},
+  {"query":"Claude keeps showing my personal Linear teams after I authenticate the company connection. Can you audit this?","should_trigger":true},
+  {"query":"I need separate Linear access for three companies and I want writes to ask first.","should_trigger":true},
+  {"query":"Both named Linear MCP servers seem to point at the same place. Help me prove whether auth is isolated.","should_trigger":true},
+  {"query":"one connector only sees one team but my browser has 4 workspaces, what am i missing","should_trigger":true},
+  {"query":"Configure Linear for Codex and Claude Code, but Dock411 uses Jira and must stay separate.","should_trigger":true},
+  {"query":"Can you repair my multi-workspace Linear setup? Logging into the second workspace replaces the first.","should_trigger":true},
+  {"query":"Audit every linear-* MCP namespace and tell me whether each reaches a distinct workspace.","should_trigger":true},
+  {"query":"I run two businesses in Linear. Make the AI route reads correctly and confirm before cross-company writes.","should_trigger":true},
+  {"query":"Help connect my personal and work Linear spaces to another local MCP client; I know it may be unverified.","should_trigger":true},
+  {"query":"Create ROSTER-123 and assign it to me.","should_trigger":false},
+  {"query":"Move HOP-88 to In Progress in our existing Linear workspace.","should_trigger":false},
+  {"query":"Summarize all open issues in the Roster project.","should_trigger":false},
+  {"query":"Create a Linear project for the Q4 launch.","should_trigger":false},
+  {"query":"How do I connect one Linear workspace to Claude Code?","should_trigger":false},
+  {"query":"Set up Jira MCP for Dock411.","should_trigger":false},
+  {"query":"Write release notes from completed Linear tickets.","should_trigger":false},
+  {"query":"Can you search Linear for issues mentioning OAuth?","should_trigger":false},
+  {"query":"Rename the HopperX team in Linear.","should_trigger":false},
+  {"query":"Build a runtime proxy that routes arbitrary MCP traffic between servers.","should_trigger":false}
+]
