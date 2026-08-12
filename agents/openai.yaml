@@ -1,0 +1,4 @@
+interface:
+  display_name: "Linear Multi-Workspace Setup"
+  short_description: "Set up isolated Linear MCP workspaces"
+  default_prompt: "Use $linear-multi-workspace-setup to configure and verify my Linear workspaces."
