@@ -16,15 +16,23 @@ macOS tested. Codex and Claude Code supported. Other MCP clients may work but ar
 1. Identify whether the user is configuring Codex, Claude Code, or both.
 2. Detect local clients with `command -v codex` and `command -v claude` when needed.
 3. Inspect only active MCP configuration through each client's native MCP commands. Do not search credential stores or unrelated config files.
-4. Ask the user to map each work area to its tracker and expected Linear workspace or team.
-5. Keep non-Linear systems in the map. Do not create a Linear connection for them.
-6. Detect hosted ChatGPT when the user has no local client or says they are using ChatGPT web. Explain the hosted limitation from [troubleshooting](references/troubleshooting.md). Do not claim local named servers affect ChatGPT web.
+4. Ask which work areas the user wants the agent to access and which tracker each one uses. Ask for the exact Linear workspace names when known.
+5. Do not infer the desired workspace count from existing connections, team names, or the workspaces available in the user's browser account.
+6. If the user does not know the exact names, ask them to open Linear's workspace switcher and report only the workspaces they want connected. Do not inspect browser sessions or credentials.
+7. If the user still cannot provide a complete list, use incremental intake:
+   - Ask for the next work-area alias and its tracker.
+   - For Linear, show and confirm a one-row plan before configuration.
+   - Authenticate and verify that connection, then ask whether another workspace should be added.
+   - Repeat Sections 2–4 until the user says no.
+   - Show the final cumulative map before installing routing guidance.
+8. Keep non-Linear systems in the map. Do not create a Linear connection for them.
+9. Detect hosted ChatGPT when the user has no local client or says they are using ChatGPT web. Explain the hosted limitation from [troubleshooting](references/troubleshooting.md). Do not claim local named servers affect ChatGPT web.
 
 Read [Codex setup](references/codex.md) for Codex. Read [Claude Code setup](references/claude-code.md) for Claude Code. Read both only when configuring both clients. For another local MCP client, read [generic MCP guidance](references/generic-mcp.md) and describe the result as unverified compatibility.
 
 ## 2. Plan
 
-Show the full plan before making changes:
+For a complete intake, show the full plan before making changes:
 
 | Work area | System | MCP name | Expected workspace/team |
 | --- | --- | --- | --- |
@@ -32,6 +40,8 @@ Show the full plan before making changes:
 | Other area | Jira | None | None |
 
 Use lowercase `linear-<alias>` names. Resolve duplicate or unclear aliases before continuing. Ask for confirmation of the plan.
+
+For incremental intake, show the cumulative map plus the next proposed row. Confirm that row before changing configuration or starting OAuth. After the last connection is verified, confirm the final map before installing routing guidance.
 
 ## 3. Configure and authenticate
 
@@ -85,6 +95,7 @@ List non-Linear routes below the table. State any limitation or unverified item 
 ## Gotchas
 
 - One Linear browser account may access several workspaces while one MCP OAuth session reaches only one.
+- The skill cannot reliably enumerate every Linear workspace available to the user's browser account. The user decides which workspaces to connect.
 - Different MCP server names do not prove separate authentication.
 - Recheck every previous connection after each new login.
 - Never treat team names alone as immutable workspace identity.

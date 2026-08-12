@@ -25,6 +25,16 @@ Then ask your agent:
 
 The agent will show a proposed map before changing anything. It will then guide you through each OAuth screen and report which connections are verified, failed, or still unverified.
 
+## How workspace discovery works
+
+The skill does not claim it can list every Linear workspace your account can access before OAuth. It discovers which workspaces you want the agent to use.
+
+- If you know the list, name each work area, tracker, and Linear workspace.
+- If you are unsure, the skill asks you to check Linear's workspace switcher and choose only the workspaces you want connected.
+- If you still do not have a full list, the skill plans, authenticates, and verifies one workspace at a time. After each one, it asks whether you want to add another.
+
+Existing MCP connections and team names never decide the workspace count. You confirm each planned connection and the final routing map.
+
 ## Why verification matters
 
 Different MCP server names do not prove separate authentication. After each login, the skill rechecks every previous connection.

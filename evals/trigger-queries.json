@@ -9,6 +9,7 @@
   {"query":"Audit every linear-* MCP namespace and tell me whether each reaches a distinct workspace.","should_trigger":true},
   {"query":"I run two businesses in Linear. Make the AI route reads correctly and confirm before cross-company writes.","should_trigger":true},
   {"query":"Help connect my personal and work Linear spaces to another local MCP client; I know it may be unverified.","should_trigger":true},
+  {"query":"I use Linear for a few things but I am not sure how many workspaces I have. Help me connect the ones I want in Codex.","should_trigger":true},
   {"query":"Create ROSTER-123 and assign it to me.","should_trigger":false},
   {"query":"Move HOP-88 to In Progress in our existing Linear workspace.","should_trigger":false},
   {"query":"Summarize all open issues in the Roster project.","should_trigger":false},
@@ -18,5 +19,6 @@
   {"query":"Write release notes from completed Linear tickets.","should_trigger":false},
   {"query":"Can you search Linear for issues mentioning OAuth?","should_trigger":false},
   {"query":"Rename the HopperX team in Linear.","should_trigger":false},
-  {"query":"Build a runtime proxy that routes arbitrary MCP traffic between servers.","should_trigger":false}
+  {"query":"Build a runtime proxy that routes arbitrary MCP traffic between servers.","should_trigger":false},
+  {"query":"What teams are in my current Linear workspace?","should_trigger":false}
 ]

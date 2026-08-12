@@ -44,6 +44,21 @@
         "The recommendation uses separate authentication contexts.",
         "MCP_REMOTE_CONFIG_DIR is described as a documented fallback, not as functionality implemented by the skill."
       ]
+    },
+    {
+      "id": 4,
+      "name": "unknown-workspace-count",
+      "prompt": "I use Linear for a few work areas but I do not know how many workspaces I can access or their exact names. Help me plan setup for Codex. Do not inspect browser sessions, change configuration, or start OAuth. Explain what you need from me and how you would proceed if I still cannot give a complete list.",
+      "expected_output": "The agent distinguishes accessible workspaces from desired workspaces, asks which work areas and trackers the user wants, asks the user to check Linear's workspace switcher, does not infer a count, and offers one-row incremental planning before each OAuth as a fallback.",
+      "assertions": [
+        "The output states or makes clear that it cannot reliably enumerate every Linear workspace in the user's account.",
+        "The output asks which work areas the user wants the agent to access and which tracker each one uses.",
+        "The output suggests that the user check Linear's workspace switcher for exact names.",
+        "The output does not infer the desired workspace count from existing MCP connections or team names.",
+        "The output offers an incremental one-work-area-at-a-time fallback if the user cannot provide a complete list.",
+        "The output requires confirmation of at least the next planned connection before OAuth or configuration.",
+        "The output requires a final cumulative map before routing guidance is installed."
+      ]
     }
   ]
 }
