@@ -29,10 +29,11 @@ Do not add Linear write tools to automatic permission allowlists. Require human 
 
 ## Verify
 
-Use the exact named server. Call both read-only tools:
+Use the exact named server.
 
-- `get_workspace`
-- `list_teams`
+Call `get_workspace` when available and record its immutable workspace ID, name, and URL. If unavailable, record the complete team list, require user confirmation, and mark workspace identity and credential isolation as unverified. Never treat team names alone as proof.
+
+When `get_workspace` succeeds, also call `list_teams` and record the returned teams.
 
 When direct tool calls could reuse the current process, launch a fresh check and allow only those read tools:
 
@@ -40,10 +41,10 @@ When direct tool calls could reuse the current process, launch a fresh check and
 claude -p --no-session-persistence --permission-mode dontAsk \
   --allowedTools mcp__linear-example__get_workspace,mcp__linear-example__list_teams \
   --output-format json \
-  'Use only linear-example. Call get_workspace and list_teams. Return the workspace ID, workspace name, workspace URL, and team names.'
+  'Use only linear-example. Call get_workspace when available and list_teams. If get_workspace is unavailable, report identity and isolation as unverified. Return the available workspace identity and complete team names.'
 ```
 
-After each later login, repeat the fresh check for all named Linear servers. Compare immutable workspace IDs with the first confirmed result.
+After each later login, repeat the available fresh checks for all named Linear servers. Compare immutable workspace IDs with the first confirmed result when IDs are available.
 
 ## Routing
 

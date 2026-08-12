@@ -1,6 +1,6 @@
 ---
 name: linear-multi-workspace-setup
-description: Use this skill when a user wants to connect, configure, audit, troubleshoot, or safely route an AI agent across multiple Linear workspaces, including when OAuth keeps switching workspaces, one connector sees only one team, or separate companies need isolated Linear access. Configure named per-workspace MCP connections, require approval for writes, verify every workspace through its own connection, and prove credentials remain isolated. Do not use for routine Linear issue or project management within one already-connected workspace.
+description: Use this skill when a user wants to connect, configure, audit, troubleshoot, or safely route an AI agent across multiple Linear workspaces, including when OAuth keeps switching workspaces, one connector sees only one team, or separate companies need isolated Linear access. Configure named per-workspace MCP connections, require approval for writes, verify every workspace through its own connection, and prove credentials remain isolated. Do not use for routine Linear issue or project work within one already-verified workspace.
 ---
 
 # Linear Multi-Workspace Setup
@@ -9,7 +9,7 @@ Set up one named MCP connection per Linear workspace. Treat the verification pro
 
 Never read, print, copy, move, or edit OAuth credentials.
 
-Compatibility: macOS tested. Codex and Claude Code supported. Other MCP clients may work but are unverified.
+macOS tested. Codex and Claude Code supported. Other MCP clients may work but are unverified.
 
 ## 1. Discover
 
@@ -50,13 +50,9 @@ OAuth cannot be completed silently. The user must approve each workspace in the 
 
 Use a fresh agent process when possible. Address each named server through its exact namespace.
 
-1. Call `get_workspace` when available. Record its immutable workspace ID, name, and URL.
-2. If `get_workspace` is unavailable, call `list_teams`, record the complete team list, require user confirmation, and mark workspace identity and credential isolation as unverified. Never treat team names alone as proof.
-3. When `get_workspace` succeeds, also call `list_teams` and record the returned teams.
-4. Compare the actual workspace and teams with the plan.
-5. Re-run the available read-only checks on every server already connected in this client.
-6. When stable IDs are available, confirm every server still returns its original workspace ID and no two intended connections return the same ID.
-7. Stop before writes if any identity changed, is duplicated, is missing, or does not match the plan. Follow [troubleshooting](references/troubleshooting.md).
+Call `get_workspace` when available and record its immutable workspace ID, name, and URL. If unavailable, record the complete team list, require user confirmation, and mark workspace identity and credential isolation as unverified. Never treat team names alone as proof.
+
+When `get_workspace` succeeds, also call `list_teams` and record the returned teams. Compare the results with the plan. Re-run the available read-only checks on every server already connected in this client. When stable IDs are available, confirm every server still returns its original workspace ID and no two intended connections return the same ID. Stop before writes if any identity changed, is duplicated, is missing, or does not match the plan. Follow [troubleshooting](references/troubleshooting.md).
 
 Repeat the complete sequence for the second client when configuring both. Authentication in one client does not prove authentication in the other.
 
@@ -88,13 +84,14 @@ List non-Linear routes below the table. State any limitation or unverified item 
 
 ## Gotchas
 
-- One browser account may see many Linear workspaces while one MCP OAuth context represents only one.
-- Different server names do not prove separate credentials. Re-test every earlier connection after each new login.
-- Team names are mutable and may not be unique. Only a stable workspace ID can prove workspace identity.
+- One Linear browser account may access several workspaces while one MCP OAuth session reaches only one.
+- Different MCP server names do not prove separate authentication.
+- Recheck every previous connection after each new login.
+- Never treat team names alone as immutable workspace identity.
+- Do not create Linear connections for work areas that use Jira or another tracker.
+- Hosted ChatGPT does not load local Codex MCP configuration.
+- Never inspect, copy, print, or modify OAuth credential storage.
 - A bundled Linear connector may conflict with named direct connections. Prefer the mapped named server without changing the bundle unless asked.
-- ChatGPT web does not load local Codex MCP configuration.
-- OAuth consent belongs to the user. Never automate, inspect, or copy it.
-- Not every business uses Linear. Keep Jira and other trackers out of the Linear connection list.
 - `MCP_REMOTE_CONFIG_DIR` is Linear's documented fallback for separate authentication contexts. This skill may instruct the client setup; it does not implement or own that fallback.
 - When a user authorizes the wrong workspace or two names resolve to one ID, stop before writes. Do not continue and repair later.
 

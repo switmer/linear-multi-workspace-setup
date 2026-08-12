@@ -34,19 +34,20 @@ Preserve every unrelated block and setting. Re-read the named block after editin
 
 ## Verify
 
-Use the exact named server. Call both read-only tools:
+Use the exact named server.
 
-- `get_workspace`
-- `list_teams`
+Call `get_workspace` when available and record its immutable workspace ID, name, and URL. If unavailable, record the complete team list, require user confirmation, and mark workspace identity and credential isolation as unverified. Never treat team names alone as proof.
+
+When `get_workspace` succeeds, also call `list_teams` and record the returned teams.
 
 When direct tool calls could reuse the current process, launch a fresh read-only check:
 
 ```bash
 codex exec --ephemeral --skip-git-repo-check --sandbox read-only --json \
-  'Use only linear-example. Call get_workspace and list_teams. Do not call write tools. Return JSON with the server name, workspace ID, workspace name, workspace URL, and team names.'
+  'Use only linear-example. Call get_workspace when available and list_teams. If get_workspace is unavailable, report identity and isolation as unverified. Do not call write tools. Return JSON with the server name, available workspace identity, and complete team names.'
 ```
 
-After each later login, repeat the fresh check for all named Linear servers. Compare immutable workspace IDs with the first confirmed result.
+After each later login, repeat the available fresh checks for all named Linear servers. Compare immutable workspace IDs with the first confirmed result when IDs are available.
 
 ## Routing
 

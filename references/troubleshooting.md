@@ -41,7 +41,9 @@ Do not create a Linear server. Keep the work area in the routing map with its re
 
 ## Verification cannot identify the workspace
 
-Do not accept connection health or OAuth success as proof. Require `get_workspace` when available. If the server exposes only teams, ask the user to confirm the complete team list and mark workspace identity as unverified.
+Do not accept connection health or OAuth success as proof.
+
+Call `get_workspace` when available and record its immutable workspace ID, name, and URL. If unavailable, record the complete team list, require user confirmation, and mark workspace identity and credential isolation as unverified. Never treat team names alone as proof.
 
 ## Current documentation
 

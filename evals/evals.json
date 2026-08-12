@@ -1,5 +1,6 @@
 {
   "skill_name": "linear-multi-workspace-setup",
+  "suite_status": "Initial automated suite. Passing these cases does not replace manual OAuth acceptance or prove full evaluation.",
   "evals": [
     {
       "id": 1,
