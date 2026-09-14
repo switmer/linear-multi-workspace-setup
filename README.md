@@ -14,7 +14,8 @@ It guides Codex or Claude Code through a safe setup:
 4. Verify each connection through its exact namespace.
 5. Recheck earlier connections after every new login.
 6. Require approval before Linear writes.
-7. Install clear workspace-routing guidance.
+7. Scope each Codex repo to only its intended Linear connection.
+8. Install clear workspace-routing guidance.
 
 ## Install
 
@@ -51,13 +52,19 @@ Different MCP server names do not prove separate authentication. After each logi
 
 When Linear exposes `get_workspace`, the skill records its immutable workspace ID. If only team names are available, it requires user confirmation and marks workspace identity and credential isolation as unverified.
 
+## Repo-level guards
+
+Global named connections make each workspace available to Codex, but most repos need only one. For a confirmed repo-to-workspace route, the skill can add a small `.codex/config.toml` override that enables the intended Linear server and disables the others.
+
+It then checks the loaded MCP and plugin state from that repo and verifies the workspace identity in a fresh process. The check fails if the project is untrusted, another Linear connection remains exposed, or the workspace does not match. Existing panes must be restarted after the config changes.
+
 ## Safety
 
 - OAuth consent stays with the user.
 - The skill never inspects, copies, prints, or modifies credential storage.
 - Setup uses read-only checks and stops before writes on an identity mismatch.
 - Work areas using Jira or another tracker do not receive Linear connections.
-- A bundled Linear connector is not changed unless the user asks.
+- A bundled Linear connector is changed only with user approval and must be checked from a fresh process.
 
 ## Support
 

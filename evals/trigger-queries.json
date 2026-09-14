@@ -10,6 +10,8 @@
   {"query":"I run two businesses in Linear. Make the AI route reads correctly and confirm before cross-company writes.","should_trigger":true},
   {"query":"Help connect my personal and work Linear spaces to another local MCP client; I know it may be unverified.","should_trigger":true},
   {"query":"I use Linear for a few things but I am not sure how many workspaces I have. Help me connect the ones I want in Codex.","should_trigger":true},
+  {"query":"This repo exposes linear-roster, linear-hopperx, and linear-personal. Make sure workers only see linear-roster here.","should_trigger":true},
+  {"query":"Audit this Codex repo before we touch Linear. I only want the HopperX auth surfaced.","should_trigger":true},
   {"query":"Create ROSTER-123 and assign it to me.","should_trigger":false},
   {"query":"Move HOP-88 to In Progress in our existing Linear workspace.","should_trigger":false},
   {"query":"Summarize all open issues in the Roster project.","should_trigger":false},

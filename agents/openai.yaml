@@ -1,4 +1,4 @@
 interface:
   display_name: "Linear Multi-Workspace Setup"
-  short_description: "Set up isolated Linear MCP workspaces"
-  default_prompt: "Use $linear-multi-workspace-setup to configure and verify my Linear workspaces."
+  short_description: "Isolate Linear workspaces and scope Codex repos"
+  default_prompt: "Use $linear-multi-workspace-setup to configure, verify, or repo-scope my Linear workspaces."

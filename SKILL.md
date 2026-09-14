@@ -1,6 +1,6 @@
 ---
 name: linear-multi-workspace-setup
-description: Use this skill when a user wants to connect, configure, audit, troubleshoot, or safely route an AI agent across multiple Linear workspaces, including when OAuth keeps switching workspaces, one connector sees only one team, or separate companies need isolated Linear access. Configure named per-workspace MCP connections, require approval for writes, verify every workspace through its own connection, and prove credentials remain isolated. Do not use for routine Linear issue or project work within one already-verified workspace.
+description: Use this skill when a user wants to connect, configure, audit, troubleshoot, or safely route an AI agent across multiple Linear workspaces, including when OAuth switches workspaces, a repo exposes the wrong Linear connection, or separate companies need isolated access. Configure named per-workspace MCP connections, scope Codex repos to the intended connection, require approval for writes, and prove credentials remain isolated. Do not use for routine Linear work in an already-scoped, verified repo.
 ---
 
 # Linear Multi-Workspace Setup
@@ -52,7 +52,7 @@ Work on one client and one workspace at a time.
 3. Tell the user which Linear workspace to select.
 4. Start that server's OAuth flow separately and pause for human consent.
 5. If the selected workspace is wrong, cancel or log out only that named server. Do not continue.
-6. Do not alter unrelated MCP servers or bundled plugins.
+6. Do not alter unrelated MCP servers or plugins. Handle the bundled Linear plugin only during the repo-scoping step and only with user approval.
 
 OAuth cannot be completed silently. The user must approve each workspace in the browser.
 
@@ -66,7 +66,23 @@ When `get_workspace` succeeds, also call `list_teams` and record the returned te
 
 Repeat the complete sequence for the second client when configuring both. Authentication in one client does not prove authentication in the other.
 
-## 5. Install routing guidance
+## 5. Scope Codex repos
+
+For each Codex repo that maps to one Linear workspace, make sure it exposes only that named Linear server before normal Linear work.
+
+1. Read the repo's durable instructions and the confirmed workspace map. Never choose from the repo name, team names, or the active browser workspace alone.
+2. From the repo, inspect `codex mcp list` and `codex plugin list --json`.
+3. If the task authorizes setup or repo scoping, add the smallest `.codex/config.toml` override: enable the intended named server and disable every other known Linear server. Preserve unrelated settings.
+4. When named direct servers are the approved route, ask before disabling the bundled Linear plugin in the user config. Do not rely on a repo-local plugin override unless a fresh native check proves it worked.
+5. From a fresh Codex process in the repo, confirm that only the intended named server is enabled, the bundled Linear plugin is disabled or absent, and `get_workspace` returns the expected workspace ID and name.
+6. Stop before Linear writes if the repo is untrusted, the route is unclear, another Linear connection remains exposed, or workspace identity does not match.
+7. Restart existing panes after a config change because they keep their startup tool list.
+
+If the current task does not authorize config changes, report the extra exposure and ask before editing. Read [Codex setup](references/codex.md) for the exact project override and verification steps.
+
+Do not claim per-repo connector hiding for Claude Code or another client unless its native config and a fresh check prove it.
+
+## 6. Install routing guidance
 
 Add a small marked section to the client's durable user instructions. Preserve all existing content.
 
@@ -83,12 +99,12 @@ Never use the bundled Linear plugin when an appropriate named Linear server is a
 
 Use `~/.codex/AGENTS.md` for Codex and `~/.claude/CLAUDE.md` for Claude Code unless the user has a different active instruction file. Do not replace either file.
 
-## 6. Report
+## 7. Report
 
 Return one row per client and server:
 
-| Client | Server name | Actual workspace | Teams | Auth status | Write approval | Isolation | Routing installed |
-| --- | --- | --- | --- | --- | --- | --- | --- |
+| Client | Server name | Actual workspace | Teams | Auth status | Write approval | Isolation | Repo scope | Routing installed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 List non-Linear routes below the table. State any limitation or unverified item clearly. Never report setup as complete until the fresh-process isolation check passes.
 
@@ -102,7 +118,9 @@ List non-Linear routes below the table. State any limitation or unverified item 
 - Do not create Linear connections for work areas that use Jira or another tracker.
 - Hosted ChatGPT does not load local Codex MCP configuration.
 - Never inspect, copy, print, or modify OAuth credential storage.
-- A bundled Linear connector may conflict with named direct connections. Prefer the mapped named server without changing the bundle unless asked.
+- A bundled Linear connector may conflict with named direct connections. Disable it only with approval, at a scope the client honors, and verify the loaded result.
+- Codex ignores project config in untrusted repos. A written `.codex/config.toml` is not proof that the guard loaded.
+- Existing panes do not gain a new tool list after config changes. Restart them before Linear work.
 - `MCP_REMOTE_CONFIG_DIR` is Linear's documented fallback for separate authentication contexts. This skill may instruct the client setup; it does not implement or own that fallback.
 - When a user authorizes the wrong workspace or two names resolve to one ID, stop before writes. Do not continue and repair later.
 
@@ -110,5 +128,6 @@ List non-Linear routes below the table. State any limitation or unverified item 
 
 - Use this skill: “Set up three separate Linear companies in Codex and Claude.”
 - Use this skill: “Both Linear MCP names now open the same workspace.” Audit before changing anything.
-- Do not use this skill: “Create an issue in our only Linear workspace.” Use the normal Linear workflow.
+- Use this skill: “This repo exposes Roster, HopperX, and personal Linear. Make it Roster-only.” Add and verify the repo guard.
+- Do not use this skill: “Create an issue in a repo already scoped to its verified Linear workspace.” Use the normal Linear workflow.
 - Do not overbuild: “Dock411 uses Jira, but add it to Linear too.” Keep Dock411 routed to Jira.

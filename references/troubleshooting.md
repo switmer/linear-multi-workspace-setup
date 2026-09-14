@@ -29,7 +29,15 @@ Do not delete a shared `~/.mcp-auth` tree. If cleanup is needed, confirm and rem
 
 ## A bundled plugin duplicates a named server
 
-Do not remove or modify the plugin unless the user asks. Add routing guidance that always prefers the correct named server. Require explicit workspace confirmation before writes.
+Stop before writes. If the user chose named direct servers, ask before disabling the bundled Linear plugin in the Codex user config. Do not rely on a repo-local plugin override unless `codex plugin list --json` from a fresh process reports the plugin disabled or absent.
+
+After the change, recheck the named MCP servers, plugin state, and expected workspace identity from the target repo. Restart existing panes.
+
+## A Codex repo still exposes every Linear server
+
+Confirm the repo has a `.codex/config.toml` entry for every known Linear server, with only the intended one enabled. Run `codex mcp list` from the repo.
+
+If the other servers remain enabled, check whether Codex trusts the project. Project config is skipped for untrusted repos. Do not report the guard as active until a fresh native command shows the intended loaded state.
 
 ## Hosted ChatGPT
 
