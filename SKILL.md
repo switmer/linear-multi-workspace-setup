@@ -50,6 +50,7 @@ Work on one client and one workspace at a time.
 1. Add only the planned named server.
 2. For Codex, set `default_tools_approval_mode = "writes"` only in that named server's config block.
 3. Tell the user which Linear workspace to select.
+   For an `mcp-remote` bridge, include `--authorize-param workspace=<alias>` so the OAuth URL identifies the connection. This marker does not select a workspace in Linear.
 4. Start that server's OAuth flow separately and pause for human consent.
 5. If the selected workspace is wrong, cancel or log out only that named server. Do not continue.
 6. Do not alter unrelated MCP servers or plugins. Handle the bundled Linear plugin only during the repo-scoping step and only with user approval.
@@ -122,6 +123,7 @@ List non-Linear routes below the table. State any limitation or unverified item 
 - A bundled Linear connector may conflict with named direct connections. Disable it only with approval, at a scope the client honors, and verify the loaded result.
 - Codex ignores project config in untrusted repos. A written `.codex/config.toml` is not proof that the guard loaded.
 - Existing panes do not gain a new tool list after config changes. Restart them before Linear work.
+- `codex mcp login` works for direct HTTP servers, not `mcp-remote` stdio servers. Start a fresh client process to authenticate a bridge, and verify its workspace after consent.
 - `MCP_REMOTE_CONFIG_DIR` is Linear's documented fallback for separate authentication contexts. This skill may instruct the client setup; it does not implement or own that fallback.
 - When a user authorizes the wrong workspace or two names resolve to one ID, stop before writes. Do not continue and repair later.
 

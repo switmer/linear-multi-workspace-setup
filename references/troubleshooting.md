@@ -23,6 +23,10 @@ Linear documents a fallback through `mcp-remote`: give each named server a separ
 
 Resolve and pin a current `mcp-remote` version before adding the stdio servers. Pass the unique directory as an environment variable to each server. Never reuse a directory. Authenticate one at a time, then repeat the full fresh-process verification sequence.
 
+Add `--authorize-param workspace=<alias>` to each bridge's arguments. It makes the OAuth URL show which named connection opened the browser and gives each bridge a distinct auth coordination key. Linear still requires the user to select the correct workspace. If adding this parameter to an existing bridge, expect one fresh OAuth login because `mcp-remote` treats the changed arguments as a new auth identity. Use its automatic callback port selection; avoid a fixed port shared by multiple bridges.
+
+Codex cannot run `codex mcp login` against a stdio bridge. Start a fresh Codex process and use the normal read-only workspace check to trigger OAuth and verify the result. For a repo that depends on one named server, set that project's server to `required = true` and allow a longer `startup_timeout_sec`, such as 120 seconds. A startup failure then appears directly instead of leaving the server out of the tool list.
+
 When reporting this recommendation, state that it is Linear's documented fallback and that this skill only provides setup guidance; it does not implement or manage the fallback.
 
 Do not delete a shared `~/.mcp-auth` tree. If cleanup is needed, confirm and remove only the exact failed workspace directory.

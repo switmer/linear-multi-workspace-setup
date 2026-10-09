@@ -13,7 +13,20 @@ Inspect only servers relevant to the approved plan. Do not inspect OAuth storage
 
 ## Add and authenticate
 
-Use user scope so the connection works across local projects:
+Use user scope so the connection works across local projects. For multiple workspaces, pin a tested `mcp-remote` version and give each named server its own credential directory:
+
+```bash
+claude mcp add --transport stdio --scope user linear-example \
+  --env "MCP_REMOTE_CONFIG_DIR=$HOME/.mcp-auth/linear-example" \
+  -- npx -y 'mcp-remote@<pinned-version>' https://mcp.linear.app/mcp \
+  --authorize-param workspace=example
+```
+
+The `workspace=example` parameter labels the OAuth URL; the user still chooses the workspace in Linear. Start a fresh Claude Code process to trigger bridge OAuth. `claude mcp login` is for Claude's direct HTTP connection, not this stdio bridge.
+
+If `linear-example` already exists as direct HTTP at user scope, confirm its intended route, run `claude mcp remove --scope user linear-example`, then add the bridge with the same name. The user must approve OAuth again. Do not inspect or move credentials.
+
+Direct HTTP remains available when a separate URL label is unnecessary and each named connection passes the full isolation check:
 
 ```bash
 claude mcp add --transport http --scope user \

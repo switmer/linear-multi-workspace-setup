@@ -17,6 +17,8 @@ It guides Codex or Claude Code through a safe setup:
 7. Scope each Codex repo to only its intended Linear connection.
 8. Install clear workspace-routing guidance.
 
+For local multi-workspace OAuth, the setup guide can label each browser URL with `workspace=<alias>` through `mcp-remote`. The label helps you match the sign-in to its terminal; you still select the workspace in Linear.
+
 ## Install
 
 [View the skill on skills.sh](https://www.skills.sh/switmer/linear-multi-workspace-setup/linear-multi-workspace-setup)

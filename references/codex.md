@@ -13,6 +13,21 @@ Inspect only servers relevant to the approved plan. Do not inspect OAuth storage
 
 ## Add and authenticate
 
+For multiple workspaces, use a separate `mcp-remote` bridge for each named server. Pin a tested `mcp-remote` version and give each server a separate credential directory. For example:
+
+```bash
+codex mcp add linear-example \
+  --env "MCP_REMOTE_CONFIG_DIR=$HOME/.mcp-auth/linear-example" \
+  -- npx -y 'mcp-remote@<pinned-version>' https://mcp.linear.app/mcp \
+  --authorize-param workspace=example
+```
+
+The `workspace=example` parameter is a visible label in the OAuth URL. It does not preselect the Linear workspace. Tell the user to choose the planned workspace. Start a fresh Codex process to trigger bridge OAuth; `codex mcp login` does not support stdio servers. Do not set a fixed callback port unless the OAuth provider requires one.
+
+If `linear-example` already exists as direct HTTP, confirm its intended route, record its non-secret settings, run `codex mcp remove linear-example`, then add the bridge with the same name and restore its write approval. This changes the auth identity, so the user must approve OAuth again. Do not inspect or move credentials.
+
+Direct HTTP remains available when a separate URL label is unnecessary and each named connection passes the full isolation check:
+
 ```bash
 codex mcp add linear-example --url https://mcp.linear.app/mcp
 codex mcp login linear-example
@@ -26,11 +41,11 @@ In `~/.codex/config.toml`, change only the matching server block:
 
 ```toml
 [mcp_servers.linear-example]
-url = "https://mcp.linear.app/mcp"
 default_tools_approval_mode = "writes"
+startup_timeout_sec = 120
 ```
 
-Preserve every unrelated block and setting. Re-read the named block after editing it.
+Add these settings to the server block created above; keep its `command`, `args`, and `env` fields. The longer timeout gives a fresh OAuth handshake time to finish. Preserve every unrelated block and setting. Re-read the named block after editing it.
 
 ## Verify
 
@@ -62,6 +77,8 @@ In the repo's `.codex/config.toml`, enable the intended named server and disable
 ```toml
 [mcp_servers.linear-roster]
 enabled = true
+required = true
+startup_timeout_sec = 120
 
 [mcp_servers.linear-hopperx]
 enabled = false
@@ -71,6 +88,8 @@ enabled = false
 ```
 
 Do not copy OAuth data or duplicate full server blocks when an `enabled` override is enough. Preserve unrelated project settings.
+
+`required = true` makes Codex report a startup failure if the selected Linear server cannot initialize, instead of silently leaving its tools out of the session. Use it only for the repo's confirmed Linear server.
 
 When the user has chosen named direct Linear servers instead of the bundled plugin, ask before disabling the plugin in `~/.codex/config.toml`:
 
