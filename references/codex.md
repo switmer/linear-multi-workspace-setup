@@ -72,6 +72,8 @@ Add or update a clearly marked `Linear routing` section in `~/.codex/AGENTS.md`.
 
 Use this only after the user confirms the repo-to-workspace route. Project config has higher priority than user config when Codex trusts the project.
 
+After the named servers pass their isolation checks, set `enabled = false` in each Linear server block in `~/.codex/config.toml`. Then an unscoped repo cannot start every Linear connection. A trusted repo can enable its chosen server below. Confirm the loaded result with `codex mcp list` from both an unscoped directory and the target repo.
+
 In the repo's `.codex/config.toml`, enable the intended named server and disable every other known Linear server:
 
 ```toml
@@ -105,7 +107,7 @@ codex mcp list
 codex plugin list --json
 ```
 
-Pass the connector check only when the intended named server is enabled, every other Linear MCP server is disabled, and `linear@openai-curated` is disabled or absent. If the project is untrusted, Codex skips `.codex/config.toml`; stop and ask the user to trust it before retrying.
+Pass the connector check only when the intended named server is enabled, every other Linear MCP server is disabled, and `linear@openai-curated` is disabled or absent. Also confirm all named Linear servers are disabled outside scoped repos. If the project is untrusted, Codex skips `.codex/config.toml`; stop and ask the user to trust it before retrying.
 
 Then launch a fresh read-only identity check from that repo using only the intended named server. Confirm its workspace ID and name match the approved route. Restart every existing Codex pane after success.
 

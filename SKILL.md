@@ -74,9 +74,9 @@ For each Codex repo that maps to one Linear workspace, make sure it exposes only
 
 1. Read the repo's durable instructions and the confirmed workspace map. Never choose from the repo name, team names, or the active browser workspace alone.
 2. From the repo, inspect `codex mcp list` and `codex plugin list --json`.
-3. If the task authorizes setup or repo scoping, add the smallest `.codex/config.toml` override: enable the intended named server and disable every other known Linear server. Preserve unrelated settings.
+3. After verifying the named connections, set each Linear server to `enabled = false` in the Codex user config. Add the smallest repo `.codex/config.toml` override: enable the intended named server and disable every other known Linear server. Preserve unrelated settings. This keeps unscoped repos from starting every Linear connection.
 4. When named direct servers are the approved route, ask before disabling the bundled Linear plugin in the user config. Do not rely on a repo-local plugin override unless a fresh native check proves it worked.
-5. From a fresh Codex process in the repo, confirm that only the intended named server is enabled, the bundled Linear plugin is disabled or absent, and `get_workspace` returns the expected workspace ID and name.
+5. From fresh Codex processes, confirm that an unscoped directory has no enabled Linear server, then confirm that the repo has only the intended named server enabled and the bundled Linear plugin disabled or absent. Check that `get_workspace` returns the expected workspace ID and name.
 6. Stop before Linear writes if the repo is untrusted, the route is unclear, another Linear connection remains exposed, or workspace identity does not match.
 7. Restart existing panes after a config change because they keep their startup tool list.
 

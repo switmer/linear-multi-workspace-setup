@@ -26,6 +26,7 @@ Prepare at least two Linear workspaces with known workspace names and IDs. Add a
 - [ ] From each Claude repo in scope, confirm no old local or project direct Linear server can open an unlabeled OAuth URL, and no stale Linear write-tool allowlist rule remains.
 - [ ] Confirm writes require approval where supported.
 - [ ] In a trusted Codex test repo, add project overrides that enable one intended named server and disable the others.
+- [ ] Disable named Linear servers in the Codex user config and confirm an unscoped directory starts none of them.
 - [ ] With approval, disable the bundled Linear plugin at user scope when named direct servers are the chosen route.
 - [ ] From the repo, confirm `codex mcp list` exposes only the intended named Linear server.
 - [ ] Confirm the selected repo server has `required = true` and a longer startup timeout, and that a failed handshake is shown as a startup failure.
