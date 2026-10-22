@@ -26,6 +26,8 @@ The `workspace=example` parameter labels the OAuth URL; the user still chooses t
 
 If `linear-example` already exists as direct HTTP at user scope, confirm its intended route, run `claude mcp remove --scope user linear-example`, then add the bridge with the same name. The user must approve OAuth again. Do not inspect or move credentials.
 
+Also run `claude mcp list` from each repo in scope. Claude can load a repo's older local or project server in addition to the user-level named bridges. Confirm the intended route, remove obsolete direct entries with `claude mcp remove --scope local <old-name>` or `--scope project`, and check that the repo's `.claude/settings.local.json` does not auto-approve writes through the old name. Restart open Claude panes after the change. If an OAuth URL lacks `workspace=<alias>`, identify the server that opened it before continuing; a direct HTTP server is still active.
+
 Direct HTTP remains available when a separate URL label is unnecessary and each named connection passes the full isolation check:
 
 ```bash

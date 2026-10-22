@@ -15,7 +15,7 @@ macOS tested. Codex and Claude Code supported. Other MCP clients may work but ar
 
 1. Identify whether the user is configuring Codex, Claude Code, or both.
 2. Detect local clients with `command -v codex` and `command -v claude` when needed.
-3. Inspect only active MCP configuration through each client's native MCP commands. Do not search credential stores or unrelated config files.
+3. Inspect active MCP configuration through each client's native MCP commands. For Claude Code, check user scope and each repo in scope: a legacy local or project `linear-server` can still open an unlabeled OAuth URL after the named user servers are fixed. Do not inspect credential stores.
 4. Ask which work areas the user wants the agent to access and which tracker each one uses. Ask for the exact Linear workspace names when known.
 5. Do not infer the desired workspace count from existing connections, team names, or the workspaces available in the user's browser account.
 6. If the user does not know the exact names, ask them to open Linear's workspace switcher and report only the workspaces they want connected. Do not inspect browser sessions or credentials.
@@ -54,6 +54,7 @@ Work on one client and one workspace at a time.
 4. Start that server's OAuth flow separately and pause for human consent.
 5. If the selected workspace is wrong, cancel or log out only that named server. Do not continue.
 6. Do not alter unrelated MCP servers or plugins. Handle the bundled Linear plugin only during the repo-scoping step and only with user approval.
+7. Before reporting success, remove confirmed obsolete direct Linear entries from the repos in scope and check for stale Linear write-tool allowlist rules. An old project entry can bypass the labeled bridge.
 
 OAuth cannot be completed silently. The user must approve each workspace in the browser.
 
