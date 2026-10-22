@@ -35,6 +35,7 @@ Prepare at least two Linear workspaces with known workspace names and IDs. Add a
 - [ ] Restart an existing pane and confirm it loads the scoped connector set.
 - [ ] Confirm durable routing guidance names every Linear and non-Linear route.
 - [ ] Restart the client and repeat the read-only checks.
+- [ ] Start several fresh agent panes after verification and confirm they do not open new OAuth tabs.
 
 ## Failure conditions
 

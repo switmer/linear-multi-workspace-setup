@@ -124,6 +124,7 @@ List non-Linear routes below the table. State any limitation or unverified item 
 - A bundled Linear connector may conflict with named direct connections. Disable it only with approval, at a scope the client honors, and verify the loaded result.
 - Codex ignores project config in untrusted repos. A written `.codex/config.toml` is not proof that the guard loaded.
 - Existing panes do not gain a new tool list after config changes. Restart them before Linear work.
+- Repeated browser authorization tabs mean setup is not complete. Pause automatic starts, check the pinned bridge version, and use the one-process recovery in [troubleshooting](references/troubleshooting.md) before enabling agent panes again.
 - `codex mcp login` works for direct HTTP servers, not `mcp-remote` stdio servers. Start a fresh client process to authenticate a bridge, and verify its workspace after consent.
 - `MCP_REMOTE_CONFIG_DIR` is Linear's documented fallback for separate authentication contexts. This skill may instruct the client setup; it does not implement or own that fallback.
 - When a user authorizes the wrong workspace or two names resolve to one ID, stop before writes. Do not continue and repair later.

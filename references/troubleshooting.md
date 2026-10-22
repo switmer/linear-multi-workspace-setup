@@ -1,5 +1,13 @@
 # Troubleshooting
 
+## Linear authorization tabs keep opening
+
+Check which client owns the running `mcp-remote` processes and which named servers are enabled in fresh client config. Several agent panes can each start a bridge; if OAuth does not finish, later panes can open more tabs. A `workspace=<alias>` URL label identifies the bridge but does not prove login succeeded.
+
+Pause automatic startup for the affected named servers before starting another OAuth attempt. In Codex, set `enabled = false` in user config and in any repo override that enables the server; confirm with `codex mcp list` from those repos. In Claude Code, remove an always-on user-scope server and add it back at the needed scope after the controlled login. Stop only the exact old Linear bridge processes or restart their panes. Do not clear or inspect credential stores as a first step.
+
+Check the pinned `mcp-remote` release notes. Version 0.14.5 fixed OAuth retries after a follower timeout; do not leave a repeatedly retrying setup pinned to 0.14.3. Re-enable one server in one client process, complete its browser callback, and verify the workspace with a read-only call before re-enabling it in agent panes. If that fails, leave the server disabled and report the failure.
+
 ## Wrong workspace after OAuth
 
 Stop before writes.
