@@ -19,6 +19,10 @@ It guides Codex or Claude Code through a safe setup:
 
 For local multi-workspace OAuth, the setup guide can label each browser URL with `workspace=<alias>` through `mcp-remote`. The label helps you match the sign-in to its terminal; you still select the workspace in Linear.
 
+## Optional CLI
+
+The [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/main/router) folder holds a small Node CLI (`linear-workspace-router`) that does the setup, check and repo-scope steps for you: it runs each connection through a wrapper that shows a labeled sign-in page, replaces Claude Code entries without removing them first, reuses an existing server name for the same credential folder, and saves each confirmed workspace ID so later checks compare IDs. Saved IDs and custom server names stay in local files that Git ignores. `npx skills add` copies this whole repo into the installed skill, so the CLI is then at `<installed skill folder>/router/bin/linear-workspace-router.mjs`; `node <that path> install-skill` writes the CLI skill with that real path filled in. You can also clone the repo and run it from there. Clean installs name Roster's server `linear-onroster` by default (login folder `linear-roster`); other aliases use `linear-<alias>`.
+
 ## Install
 
 [View the skill on skills.sh](https://www.skills.sh/switmer/linear-multi-workspace-setup/linear-multi-workspace-setup)
@@ -57,6 +61,8 @@ When Linear exposes `get_workspace`, the skill records its immutable workspace I
 ## Repo-level guards
 
 Global named connections make each workspace available to Codex, but most repos need only one. For a confirmed repo-to-workspace route, the skill can add a small `.codex/config.toml` override that enables the intended Linear server and disables the others.
+
+Before writing overrides, it requires complete server definitions for every referenced connection, including disabled ones. Replacement must keep config valid throughout and restore the prior config after failure. It checks all installed `linear@…` plugin IDs, including the remote variant, rather than trusting config flags alone.
 
 It then checks the loaded MCP and plugin state from that repo and verifies the workspace identity in a fresh process. The check fails if the project is untrusted, another Linear connection remains exposed, or the workspace does not match. Existing panes must be restarted after the config changes.
 

@@ -47,10 +47,10 @@ For incremental intake, show the cumulative map plus the next proposed row. Conf
 
 Work on one client and one workspace at a time.
 
-1. Add only the planned named server.
+1. Add only the planned named server. For an existing Codex connection, follow the atomic replacement and rollback steps in [Codex setup](references/codex.md). Never remove its global definition before replacing it.
 2. For Codex, set `default_tools_approval_mode = "writes"` only in that named server's config block.
 3. Tell the user which Linear workspace to select.
-   For an `mcp-remote` bridge, include `--authorize-param workspace=<alias>` so the OAuth URL identifies the connection. This marker does not select a workspace in Linear.
+   For an `mcp-remote` bridge, include `--authorize-param workspace=<alias>` so the OAuth URL identifies the connection. This marker does not select a workspace in Linear and Linear's consent page does not show it. To make the workspace visible on screen, run the bridge through the optional wrapper in [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/main/router): it opens one page titled with the workspace name and a "Continue to Linear for <WORKSPACE>" button in place of the raw Linear tab. Keep the server name separate from the credential folder (for example server `linear-onroster`, folder `linear-roster`), and never add a second entry for a login folder a client already uses.
 4. Start that server's OAuth flow separately and pause for human consent.
 5. If the selected workspace is wrong, cancel or log out only that named server. Do not continue.
 6. Do not alter unrelated MCP servers or plugins. Handle the bundled Linear plugin only during the repo-scoping step and only with user approval.
@@ -74,8 +74,8 @@ For each Codex repo that maps to one Linear workspace, make sure it exposes only
 
 1. Read the repo's durable instructions and the confirmed workspace map. Never choose from the repo name, team names, or the active browser workspace alone.
 2. From the repo, inspect `codex mcp list` and `codex plugin list --json`.
-3. After verifying the named connections, set each Linear server to `enabled = false` in the Codex user config. Add the smallest repo `.codex/config.toml` override: enable the intended named server and disable every other known Linear server. Preserve unrelated settings. This keeps unscoped repos from starting every Linear connection.
-4. When named direct servers are the approved route, ask before disabling the bundled Linear plugin in the user config. Do not rely on a repo-local plugin override unless a fresh native check proves it worked.
+3. Before writing repo overrides, confirm every referenced server has a complete global definition and a valid merged transport, even when disabling it. Stop without writing overrides if discovery fails or a command/URL is missing. After verifying the named connections, set each Linear server to `enabled = false` in the Codex user config. Add the smallest repo `.codex/config.toml` override: enable the intended named server and disable every other known Linear server. Preserve unrelated settings. This keeps unscoped repos from starting every Linear connection.
+4. Inspect every installed `linear@…` plugin, including `linear@openai-curated-remote`; an old-ID-only check can falsely pass. Unreadable or unknown plugin state fails verification. When named direct servers are the approved route, ask before disabling the bundled Linear plugin in the user config. Do not rely on a repo-local plugin override unless a fresh native check proves it worked.
 5. From fresh Codex processes, confirm that an unscoped directory has no enabled Linear server, then confirm that the repo has only the intended named server enabled and the bundled Linear plugin disabled or absent. Check that `get_workspace` returns the expected workspace ID and name.
 6. Stop before Linear writes if the repo is untrusted, the route is unclear, another Linear connection remains exposed, or workspace identity does not match.
 7. Restart existing panes after a config change because they keep their startup tool list.
@@ -115,6 +115,8 @@ List non-Linear routes below the table. State any limitation or unverified item 
 - One Linear browser account may access several workspaces while one MCP OAuth session reaches only one.
 - The skill cannot reliably enumerate every Linear workspace available to the user's browser account. The user decides which workspaces to connect.
 - Different MCP server names do not prove separate authentication.
+- Flag-only project entries need complete server definitions to inherit. Removing a global definition can break config discovery even when the project disables that server.
+- A config parse error calls for transport repair, not repeated login/setup. Restore config after failed replacement; never claim that config rollback restores OAuth credentials.
 - Recheck every previous connection after each new login.
 - Never treat team names alone as immutable workspace identity.
 - Do not create Linear connections for work areas that use Jira or another tracker.

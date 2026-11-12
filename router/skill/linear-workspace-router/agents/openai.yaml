@@ -1,0 +1,4 @@
+interface:
+  display_name: "Linear Workspace Router"
+  short_description: "Isolate Linear workspaces and scope each repo"
+  default_prompt: "Use $linear-workspace-router to configure, verify, or repo-scope my Linear workspaces safely."

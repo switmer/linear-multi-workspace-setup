@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+// `open` shim used only by linear-bridge-label.mjs. Linear sign-in URLs open a labeled
+// launcher page (same tab continues to Linear on click). Everything else goes to /usr/bin/open.
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, writeFileSync, readdirSync, statSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+const { launcherPage } = await import(join(fileURLToPath(new URL(".", import.meta.url)), "launcher-page.mjs"));
+
+const argv = process.argv.slice(2);
+const url = argv[argv.length - 1] ?? "";
+const alias = process.env.LINEAR_BRIDGE_ALIAS;
+const passThrough = () => process.exit(spawnSync("/usr/bin/open", argv, { stdio: "inherit" }).status ?? 1);
+
+if (!alias || !/^https:\/\/mcp\.linear\.app\/authorize\?/.test(url)) passThrough();
+
+const port = new URL(url).searchParams.get("redirect_uri")?.match(/:(\d+)\//)?.[1] ?? "";
+
+// Drop launcher pages older than a day.
+for (const d of readdirSync(tmpdir()).filter((n) => n.startsWith("linear-signin-"))) {
+  try { if (Date.now() - statSync(join(tmpdir(), d)).mtimeMs > 864e5) rmSync(join(tmpdir(), d), { recursive: true }); } catch {}
+}
+
+const dir = mkdtempSync(join(tmpdir(), "linear-signin-"));
+const file = join(dir, "index.html");
+writeFileSync(file, launcherPage({ alias, displayName: process.env.LINEAR_BRIDGE_DISPLAY || null, url, port, opened: new Date().toLocaleString() }), { mode: 0o600 });
+process.exit(spawnSync("/usr/bin/open", [file], { stdio: "inherit" }).status ?? 1);
