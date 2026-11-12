@@ -35,7 +35,10 @@ Use the packaged CLI for setup. Do not recreate the OAuth sequence by hand unles
 - A server that already uses the wrapper and the right folder is left alone and only verified. The router never rewrites it with a plain `npx` command, and keeps its `enabled` setting.
 - Codex setup replaces the complete named connection atomically and rolls back if verification fails. New Codex connections start disabled; the router does not change `enabled` on existing ones.
 - Claude Code setup never removes a server. A new server is added with `claude mcp add-json`. An existing one is replaced by editing only that one entry in `~/.claude.json` in a single atomic rename, after a timestamped backup and a check that the file did not change meanwhile. If anything fails, the old entry stays in place. Do not run `claude mcp remove` by hand for these servers.
-- Verification enables the requested servers only in its fresh process. If verification or workspace confirmation fails, setup restores the prior config, unless another process has edited it. Config rollback does not roll back credentials or an OAuth workspace choice. Do not repeat login/setup to repair a config parse error; inspect config and use read-only checks first.
+- Verification enables the requested servers only in its fresh process.
+  - Codex: if verification or workspace confirmation fails, setup restores the prior config, unless another process has edited it.
+  - Claude Code: a failed write leaves the old entry in place. If a later verification fails, the new entry stays and the timestamped `~/.claude.json.router-backup-*` file holds the previous config; restore it yourself if you want the old entry back.
+  - Config rollback never rolls back credentials or an OAuth workspace choice. Do not repeat login/setup to repair a config parse error; inspect config and use read-only checks first.
 
 The plugin guard checks all installed `linear@…` IDs, including `linear@openai-curated-remote`. Missing or unreadable plugin state is a failed check. Scope config disables both shipped IDs, but the fresh plugin listing must confirm they are disabled. If it still reports enabled, stop Linear writes and remove it with `codex plugin remove <pluginId>` (account-managed remote plugins ignore `config.toml`); do not report routing as fully verified.
 
