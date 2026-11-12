@@ -16,6 +16,7 @@ export function launcherPage({ alias, displayName = null, url, port, opened, exp
   const aliasText = esc(alias);
   const initial = esc(shown[0]?.toUpperCase() ?? "?");
   const hue = hueFor(alias);
+  const safePort = /^\d{1,5}$/.test(String(port)) ? String(port) : "";
   const favicon = `data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="${expired ? "#62666d" : `hsl(${hue} 60% 52%)`}"/><text x="16" y="23" font-size="19" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">${initial}</text></svg>`,
   )}`;
@@ -52,7 +53,7 @@ h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.02em}
 <div class="foot"><span><i class="dot" id="dot"></i><span id="state">${expired ? "Ended" : "Waiting"}</span></span><span>Opened ${esc(opened)}</span></div>
 </main>
 <script>
-const port=${jsonForScript(port || "")},label=${jsonForScript(shown)};
+const port=${jsonForScript(safePort)},label=${jsonForScript(shown)};
 const go=document.getElementById("go");
 function end(){
   document.body.classList.add("ended");

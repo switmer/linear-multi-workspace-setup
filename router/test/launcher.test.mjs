@@ -46,3 +46,11 @@ test("displayNameFor returns the saved name or null", () => {
   assert.equal(displayNameFor("personal", { hopperx: { name: "HopperAI" } }), null);
   assert.equal(displayNameFor("x", undefined), null);
 });
+
+test("only a plain numeric port reaches the script", () => {
+  assert.match(launcherPage({ ...base, alias: "a", port: "6699" }), /const port="6699"/);
+  const bad = launcherPage({ ...base, alias: "a", port: '1"</script><script>alert(1)' });
+  assert.match(bad, /const port=""/);
+  assert.doesNotMatch(bad, /<script>alert/);
+  assert.match(launcherPage({ ...base, alias: "a", port: "66990000" }), /const port=""/);
+});
