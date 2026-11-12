@@ -58,6 +58,8 @@ When Linear exposes `get_workspace`, the skill records its immutable workspace I
 
 Global named connections make each workspace available to Codex, but most repos need only one. For a confirmed repo-to-workspace route, the skill can add a small `.codex/config.toml` override that enables the intended Linear server and disables the others.
 
+Before writing overrides, it requires complete server definitions for every referenced connection, including disabled ones. Replacement must keep config valid throughout and restore the prior config after failure. It checks all installed `linear@…` plugin IDs, including the remote variant, rather than trusting config flags alone.
+
 It then checks the loaded MCP and plugin state from that repo and verifies the workspace identity in a fresh process. The check fails if the project is untrusted, another Linear connection remains exposed, or the workspace does not match. Existing panes must be restarted after the config changes.
 
 ## Safety

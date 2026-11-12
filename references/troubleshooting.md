@@ -1,5 +1,13 @@
 # Troubleshooting
 
+## Codex reports invalid transport or cannot parse merged config
+
+Check user config and each affected repo override. An entry containing only `enabled` still requires a command or URL from the merged definition, even if disabled. A failed replacement may have removed the global definition that project overrides depend on.
+
+Stop setup and do not repeat login. Confirm the existing server name, expected workspace, and previously configured transport. Restore that complete definition without changing bridge arguments or credential-directory paths. Use the atomic replacement and rollback steps in [Codex setup](codex.md). Never invent a workspace alias or inspect credentials to repair parsing.
+
+Run `codex mcp list` from both an unscoped directory and each affected repo. Then verify the exact expected workspace ID through the named server in a fresh read-only process. Report config parsing, workspace identity, and plugin state separately: one passing does not prove the others.
+
 ## Linear authorization tabs keep opening
 
 Check which client owns the running `mcp-remote` processes and which named servers are enabled in fresh client config. Several agent panes can each start a bridge; if OAuth does not finish, later panes can open more tabs. A `workspace=<alias>` URL label identifies the bridge but does not prove login succeeded.
@@ -42,6 +50,8 @@ Do not delete a shared `~/.mcp-auth` tree. If cleanup is needed, confirm and rem
 ## A bundled plugin duplicates a named server
 
 Stop before writes. If the user chose named direct servers, ask before disabling the bundled Linear plugin in the Codex user config. Do not rely on a repo-local plugin override unless `codex plugin list --json` from a fresh process reports the plugin disabled or absent.
+
+Inspect every installed `linear@…` plugin, including `linear@openai-curated-remote`. A disabled old ID does not offset an enabled remote ID. Missing or unreadable installed state fails the check. If the fresh listing still reports enabled despite config `false`, have the user disable the installed plugin through `/plugins` and recheck. Keep Linear writes paused; do not repeat OAuth for this plugin-state problem.
 
 After the change, recheck the named MCP servers, plugin state, and expected workspace identity from the target repo. Restart existing panes.
 

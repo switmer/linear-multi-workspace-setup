@@ -24,7 +24,18 @@ codex mcp add linear-example \
 
 The `workspace=example` parameter is a visible label in the OAuth URL. It does not preselect the Linear workspace. Tell the user to choose the planned workspace. Start a fresh Codex process to trigger bridge OAuth; `codex mcp login` does not support stdio servers. Do not set a fixed callback port unless the OAuth provider requires one.
 
-If `linear-example` already exists as direct HTTP, confirm its intended route, record its non-secret settings, run `codex mcp remove linear-example`, then add the bridge with the same name and restore its write approval. This changes the auth identity, so the user must approve OAuth again. Do not inspect or move credentials.
+### Replace an existing connection safely
+
+Never remove a global Codex server before adding its replacement. A project may still reference it with only `enabled = true` or `enabled = false`. Either reference needs a complete transport after config merging; removing the global definition can prevent the next Codex command from loading config.
+
+1. Confirm the existing server name and its intended workspace. Do not guess an alias or rename it to repair parsing.
+2. Prepare the full replacement in memory: `command`, `args`, its own `MCP_REMOTE_CONFIG_DIR` path, `default_tools_approval_mode = "writes"`, `startup_timeout_sec = 120`, and `enabled = false`. For a planned HTTP-to-stdio change, remove the old HTTP transport fields from that server block in the prepared config. Preserve unrelated settings and servers.
+3. Retain the prior config for rollback without printing it or inspecting credential storage. Check that the file has not changed since it was read. Write the complete replacement through a temporary file in the same directory, restrict it to the user, then rename it over the config. Do not write an intermediate state with no transport.
+4. Confirm `codex mcp list` parses from an unscoped directory and every known affected repo before starting OAuth. Check each named definition with `codex mcp get <name> --json`; require a non-empty stdio command or HTTP URL, even for disabled servers. Do not print secrets returned by config commands.
+5. Use a fresh read-only process to verify the workspace. Enable the disabled server only for that process with `-c 'mcp_servers.linear-example.enabled=true'`. After a later login, enable each server being rechecked in that process and confirm all earlier workspace IDs.
+6. If replacement or verification fails, restore the previous config atomically, provided no other process changed it. If another process edited it, stop and report the conflict instead of overwriting those edits. Config rollback does not undo an OAuth workspace choice or credential changes.
+
+Keep the same bridge arguments and credential-directory path when only repairing config. Changing the auth identity may require new user-controlled OAuth; a config parse error by itself is not a reason to sign in again. Do not inspect or move credentials.
 
 Direct HTTP remains available when a separate URL label is unnecessary and each named connection passes the full isolation check:
 
@@ -58,7 +69,7 @@ When `get_workspace` succeeds, also call `list_teams` and record the returned te
 When direct tool calls could reuse the current process, launch a fresh read-only check:
 
 ```bash
-codex exec --ephemeral --skip-git-repo-check --sandbox read-only --json \
+codex exec -c 'mcp_servers.linear-example.enabled=true' --ephemeral --skip-git-repo-check --sandbox read-only --json \
   'Use only linear-example. Call get_workspace when available and list_teams. If get_workspace is unavailable, report identity and isolation as unverified. Do not call write tools. Return JSON with the server name, available workspace identity, and complete team names.'
 ```
 
@@ -73,6 +84,8 @@ Add or update a clearly marked `Linear routing` section in `~/.codex/AGENTS.md`.
 Use this only after the user confirms the repo-to-workspace route. Project config has higher priority than user config when Codex trusts the project.
 
 After the named servers pass their isolation checks, set `enabled = false` in each Linear server block in `~/.codex/config.toml`. Then an unscoped repo cannot start every Linear connection. A trusted repo can enable its chosen server below. Confirm the loaded result with `codex mcp list` from both an unscoped directory and the target repo.
+
+Before writing any repo override, check every referenced server, including those being disabled. Its global definition must exist and the merged connection must have a non-empty stdio command or HTTP URL. A name appearing in either file is not enough. If config discovery fails, repair the missing transport first without OAuth. Do not add a flag-only entry for an undefined server. Before removing or renaming a global definition, check every known repo override that depends on it.
 
 In the repo's `.codex/config.toml`, enable the intended named server and disable every other known Linear server:
 
@@ -98,6 +111,9 @@ When the user has chosen named direct Linear servers instead of the bundled plug
 ```toml
 [plugins."linear@openai-curated"]
 enabled = false
+
+[plugins."linear@openai-curated-remote"]
+enabled = false
 ```
 
 Use user scope for this plugin setting. Do not assume the same setting works from project config. Check the loaded state from the target repo:
@@ -107,7 +123,7 @@ codex mcp list
 codex plugin list --json
 ```
 
-Pass the connector check only when the intended named server is enabled, every other Linear MCP server is disabled, and `linear@openai-curated` is disabled or absent. Also confirm all named Linear servers are disabled outside scoped repos. If the project is untrusted, Codex skips `.codex/config.toml`; stop and ask the user to trust it before retrying.
+Pass the connector check only when the intended named server is enabled, every other Linear MCP server is disabled, and every installed `linear@…` plugin is disabled or absent. Inspect all installed Linear plugin IDs, including `linear@openai-curated-remote`; do not look up only the old ID or stop at the first disabled match. Missing, unreadable, or unrecognized plugin state fails the check. A config value of `false` is not proof of the installed state. If the fresh listing still reports an enabled Linear plugin, have the user disable that plugin through `/plugins`, recheck, and keep Linear writes paused until it passes. Also confirm all named Linear servers are disabled outside scoped repos. If the project is untrusted, Codex skips `.codex/config.toml`; stop and ask the user to trust it before retrying.
 
 Then launch a fresh read-only identity check from that repo using only the intended named server. Confirm its workspace ID and name match the approved route. Restart every existing Codex pane after success.
 

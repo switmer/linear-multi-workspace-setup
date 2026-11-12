@@ -42,3 +42,14 @@ Prepare at least two Linear workspaces with known workspace names and IDs. Add a
 Fail acceptance if any OAuth token or credential content appears, a write occurs, a non-Linear work area receives a Linear connection, a workspace ID changes, two intended connections share one ID, an extra Linear connection remains exposed in the scoped repo, or the report claims proof when only team names are available.
 
 Do not tag a release based only on this machine's previous authentication. Run the sequence with a clean client profile or a disposable operating-system user.
+
+## Config replacement and plugin checks
+
+Use disposable Codex config directories and repos. Do not use real OAuth credentials for these config cases.
+
+- Missing transport: give a repo an `enabled = false` override for a global server that does not exist. Confirm discovery fails and the procedure repairs the confirmed definition before writing new overrides. No login should run.
+- Replacement: give a global stdio server a complete definition and write approval, with a project override that enables it. Replace the full definition atomically. Confirm both unscoped and repo commands always parse, global startup stays disabled, and a temporary process can enable it. Force verification to fail and confirm the prior config returns exactly. Repeat with a concurrent edit; confirm rollback leaves that edit intact and reports the conflict.
+- Current plugin: supply an installed-state fixture with the old Linear ID disabled and the remote ID enabled. The result must fail the plugin check. Config flags and correct workspace identity must not override it.
+- Unknown plugin state: supply a failed command or unknown JSON shape. Report plugin state as unverified and stop writes.
+
+These cases test config and reporting only. They do not prove OAuth isolation or count as completed manual acceptance until run and recorded.

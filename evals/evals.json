@@ -59,6 +59,54 @@
         "The output requires confirmation of at least the next planned connection before OAuth or configuration.",
         "The output requires a final cumulative map before routing guidance is installed."
       ]
+    },
+    {
+      "id": 5,
+      "name": "missing-disabled-transport",
+      "prompt": "A repo disables linear-hopperx with an enabled=false entry, but global config has no linear-hopperx definition. Codex reports invalid transport. Diagnose without changing files or starting OAuth.",
+      "expected_output": "Reject the incomplete merged connection, repair the confirmed transport before scoping, and avoid repeated login.",
+      "assertions": [
+        "The disabled server is recognized as needing a complete transport.",
+        "The agent stops before writing new repo overrides.",
+        "The agent does not guess a workspace alias or start OAuth.",
+        "The plan checks parsing in both unscoped and affected repo contexts."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "replacement-fails",
+      "prompt": "Plan replacing an existing Codex Linear bridge used by three repo overrides. Verification fails after the replacement. Do not edit files or run OAuth. Include recovery and what happens if another process edits config.",
+      "expected_output": "Prepare and atomically replace the complete definition, preserve approval, restore config on failure without overwriting concurrent edits, and distinguish config rollback from credentials.",
+      "assertions": [
+        "The plan never removes the global server before replacement.",
+        "The complete transport and writes approval are present together.",
+        "Global connections remain disabled by default; verification enables them only in its process.",
+        "Failure restores prior config only if another process has not changed it.",
+        "The plan does not claim config rollback restores OAuth credentials."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "remote-plugin-enabled",
+      "prompt": "A fresh codex plugin list --json returns installed=[{pluginId: \"linear@openai-curated\", enabled:false}, {pluginId:\"linear@openai-curated-remote\", enabled:true}]. Config says both are false and the named server reaches the correct workspace. Can Linear writes proceed? Do not change files.",
+      "expected_output": "Reject plugin verification, keep writes paused, and direct the user to disable the actual installed plugin through /plugins and recheck.",
+      "assertions": [
+        "The enabled remote plugin is detected despite the disabled old ID.",
+        "Config false is not accepted as installed-state proof.",
+        "Linear writes stay paused.",
+        "The agent does not repeat OAuth or rename connections."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "unreadable-plugin-state",
+      "prompt": "The named Linear server reaches the exact expected workspace ID, but a fresh plugin list command fails or returns an unknown JSON shape. Report whether setup is fully verified. Do not edit files.",
+      "expected_output": "Report workspace identity as verified but plugin state as unverified, keep writes paused, and require a fresh successful installed-state check.",
+      "assertions": [
+        "Unknown plugin state is not treated as absent or disabled.",
+        "The agent does not report complete verification.",
+        "Linear writes stay paused."
+      ]
     }
   ]
 }
