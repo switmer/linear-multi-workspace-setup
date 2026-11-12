@@ -1,15 +1,21 @@
 // Builds the launcher page (one static HTML string). Used by the `open` shim and by sample generation.
 // Look follows Linear's: near-black canvas, hairline borders, tight Inter-style type, small radii,
 // a rounded-square workspace tile, one quiet primary button.
+// JSON that is safe to place inside a <script> block.
+const jsonForScript = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 // Same name always gives the same hue, so each workspace keeps its own color.
 const hueFor = (name) => [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
 
-export function launcherPage({ label, url, port, opened, expired = false }) {
-  const name = esc(label);
-  const initial = esc(label[0] ?? "?");
-  const hue = hueFor(label);
+// alias: the short name from the server config. displayName: the confirmed workspace name from the saved pin, if any.
+// Only a saved name is shown as "the workspace to pick"; without one the page does not claim the alias is Linear's name.
+export function launcherPage({ alias, displayName = null, url, port, opened, expired = false }) {
+  const shown = displayName || alias.toUpperCase();
+  const name = esc(shown);
+  const aliasText = esc(alias);
+  const initial = esc(shown[0]?.toUpperCase() ?? "?");
+  const hue = hueFor(alias);
   const favicon = `data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="${expired ? "#62666d" : `hsl(${hue} 60% 52%)`}"/><text x="16" y="23" font-size="19" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">${initial}</text></svg>`,
   )}`;
@@ -40,20 +46,20 @@ h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.02em}
 <body class="${expired ? "ended" : ""}">
 <main class="card" id="card">
 <div class="tile">${initial}</div>
-<h1 id="title">${expired ? "This request has ended" : "Codex needs a Linear sign-in"}</h1>
-<p class="sub" id="sub">${expired ? "Close this tab. A new one opens if Codex asks again." : `Workspace: <b>${name}</b>. On Linear's page, pick <b>${name}</b>.`}</p>
-<a class="btn" id="go" ${expired ? "" : `href="${esc(url)}"`}>${expired ? "Request ended" : `Continue to Linear for ${name}`}</a>
+<h1 id="title">${expired ? "This request has ended" : "Linear sign-in requested"}</h1>
+<p class="sub" id="sub">${expired ? "Close this tab. A new one opens if it is asked for again." : displayName ? `Connection <b>${aliasText}</b>. On Linear's page, pick <b>${name}</b>.` : `Connection <b>${aliasText}</b>. On Linear's page, choose the workspace you intended for <b>${aliasText}</b>.`}</p>
+<a class="btn" id="go" ${expired ? "" : `href="${esc(url)}"`}>${expired ? "Request ended" : displayName ? `Continue to Linear for ${name}` : `Continue to Linear for ${aliasText}`}</a>
 <div class="foot"><span><i class="dot" id="dot"></i><span id="state">${expired ? "Ended" : "Waiting"}</span></span><span>Opened ${esc(opened)}</span></div>
 </main>
 <script>
-const port=${JSON.stringify(port || "")},label=${JSON.stringify(label)};
+const port=${jsonForScript(port || "")},label=${jsonForScript(shown)};
 const go=document.getElementById("go");
 function end(){
   document.body.classList.add("ended");
   document.title="Expired · "+label+" · Linear sign-in";
   go.removeAttribute("href");go.textContent="Request ended";
   document.getElementById("title").textContent="This request has ended";
-  document.getElementById("sub").textContent="Close this tab. A new one opens if Codex asks again.";
+  document.getElementById("sub").textContent="Close this tab. A new one opens if it is asked for again.";
   document.getElementById("state").textContent="Ended";
 }
 async function alive(){try{await fetch("http://127.0.0.1:"+port+"/",{mode:"no-cors"});return true}catch{return false}}

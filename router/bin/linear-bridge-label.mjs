@@ -7,16 +7,18 @@
 import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { MCP_REMOTE_VERSION } from "../src/core.mjs";
+import { MCP_REMOTE_VERSION, displayNameFor, readPins } from "../src/core.mjs";
 
 const args = process.argv.slice(2);
 const workspaceArg = args.find((a, i) => args[i - 1] === "--authorize-param" && a.startsWith("workspace="));
-const label = (workspaceArg ? workspaceArg.slice("workspace=".length) : "unknown").toUpperCase();
+const alias = workspaceArg ? workspaceArg.slice("workspace=".length) : "unknown";
+// Show the confirmed workspace name when one is saved. A missing or unreadable pins file just means no name.
+const displayName = displayNameFor(alias, await readPins().catch(() => ({})));
 const shimDir = join(dirname(fileURLToPath(import.meta.url)), "shim");
 
 const child = spawn("npx", ["-y", MCP_REMOTE_VERSION, ...args], {
   stdio: "inherit",
-  env: { ...process.env, PATH: `${shimDir}:${process.env.PATH ?? ""}`, LINEAR_BRIDGE_LABEL: label },
+  env: { ...process.env, PATH: `${shimDir}:${process.env.PATH ?? ""}`, LINEAR_BRIDGE_ALIAS: alias, LINEAR_BRIDGE_DISPLAY: displayName ?? "" },
 });
 
 for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(sig, () => child.kill(sig));

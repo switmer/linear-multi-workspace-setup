@@ -704,3 +704,8 @@ export async function readNames(options = {}) {
 export function applyNames(workspaces, names) {
   return workspaces.map((workspace) => names[workspace.alias] ? { ...workspace, serverName: names[workspace.alias] } : workspace);
 }
+
+// The workspace name the user should look for on Linear's page: the confirmed saved name, or null when none is saved.
+export function displayNameFor(alias, pins) {
+  return pins?.[alias]?.name || null;
+}
