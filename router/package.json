@@ -1,0 +1,34 @@
+{
+  "name": "linear-workspace-router",
+  "version": "0.3.0",
+  "description": "Set up and verify isolated Linear workspaces for Codex and Claude Code.",
+  "type": "module",
+  "bin": {
+    "linear-workspace-router": "./bin/linear-workspace-router.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "skill",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check bin/linear-workspace-router.mjs && node --check src/args.mjs && node --check src/core.mjs && node --check src/index.mjs && node --check bin/linear-bridge-label.mjs && node --check bin/shim/open && node --check bin/shim/launcher-page.mjs",
+    "prepublishOnly": "npm run check && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "agent-skill",
+    "claude-code",
+    "codex",
+    "linear",
+    "mcp",
+    "oauth"
+  ],
+  "author": "Steve Witmer",
+  "license": "MIT"
+}

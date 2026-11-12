@@ -53,3 +53,11 @@ Use disposable Codex config directories and repos. Do not use real OAuth credent
 - Unknown plugin state: supply a failed command or unknown JSON shape. Report plugin state as unverified and stop writes.
 
 These cases test config and reporting only. They do not prove OAuth isolation or count as completed manual acceptance until run and recorded.
+
+## Router CLI checks
+
+- [ ] Re-running setup keeps the labeled wrapper command and adds no second entry for a login folder a client already uses.
+- [ ] A failed Claude Code replace leaves the old entry in place.
+- [ ] A saved workspace ID mismatch fails with both IDs and leaves the saved pin unchanged; a display-name change with the same ID passes.
+- [ ] `check --model <name>` runs verification with that model; without it the client's own setting is used.
+- [ ] `pins.json` and `names.json` are not tracked by Git.

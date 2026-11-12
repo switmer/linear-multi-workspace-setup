@@ -13,7 +13,7 @@ Inspect only servers relevant to the approved plan. Do not inspect OAuth storage
 
 ## Add and authenticate
 
-For multiple workspaces, use a separate `mcp-remote` bridge for each named server. Pin a tested `mcp-remote` version and give each server a separate credential directory. For example:
+For multiple workspaces, use a separate `mcp-remote` bridge for each named server (optionally through the labeled wrapper in [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/main/router), which keeps the same arguments and credential folder). Verification runs may need an explicit model the account allows; pass it with `--model` rather than changing the global model. Pin a tested `mcp-remote` version and give each server a separate credential directory. For example:
 
 ```bash
 codex mcp add linear-example \

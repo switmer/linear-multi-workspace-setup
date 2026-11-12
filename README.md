@@ -19,6 +19,10 @@ It guides Codex or Claude Code through a safe setup:
 
 For local multi-workspace OAuth, the setup guide can label each browser URL with `workspace=<alias>` through `mcp-remote`. The label helps you match the sign-in to its terminal; you still select the workspace in Linear.
 
+## Optional CLI
+
+The [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/main/router) folder holds a small Node CLI (`linear-workspace-router`) that does the setup, check and repo-scope steps for you: it runs each connection through a wrapper that shows a labeled sign-in page, replaces Claude Code entries without removing them first, reuses an existing server name for the same credential folder, and saves each confirmed workspace ID so later checks compare IDs. Saved IDs and custom server names stay in local files that Git ignores.
+
 ## Install
 
 [View the skill on skills.sh](https://www.skills.sh/switmer/linear-multi-workspace-setup/linear-multi-workspace-setup)

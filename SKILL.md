@@ -50,7 +50,7 @@ Work on one client and one workspace at a time.
 1. Add only the planned named server. For an existing Codex connection, follow the atomic replacement and rollback steps in [Codex setup](references/codex.md). Never remove its global definition before replacing it.
 2. For Codex, set `default_tools_approval_mode = "writes"` only in that named server's config block.
 3. Tell the user which Linear workspace to select.
-   For an `mcp-remote` bridge, include `--authorize-param workspace=<alias>` so the OAuth URL identifies the connection. This marker does not select a workspace in Linear.
+   For an `mcp-remote` bridge, include `--authorize-param workspace=<alias>` so the OAuth URL identifies the connection. This marker does not select a workspace in Linear and Linear's consent page does not show it. To make the workspace visible on screen, run the bridge through the optional wrapper in [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/main/router): it opens one page titled with the workspace name and a "Continue to Linear for <WORKSPACE>" button in place of the raw Linear tab. Keep the server name separate from the credential folder (for example server `linear-onroster`, folder `linear-roster`), and never add a second entry for a login folder a client already uses.
 4. Start that server's OAuth flow separately and pause for human consent.
 5. If the selected workspace is wrong, cancel or log out only that named server. Do not continue.
 6. Do not alter unrelated MCP servers or plugins. Handle the bundled Linear plugin only during the repo-scoping step and only with user approval.
