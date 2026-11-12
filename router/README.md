@@ -92,7 +92,7 @@ The saved login folder is `~/.mcp-auth/linear-<alias>`, the same as the plain `m
 Two optional files sit next to the CLI and are ignored by Git:
 
 - `pins.json`: written after a check or setup confirms a workspace (alias, name, ID, URL; no tokens). Later runs compare the saved ID, so a display-name change passes and a different ID fails with both IDs shown. The saved pin is never overwritten by a different ID.
-- `names.json`: optional, for a server name that differs from the alias, for example `{ "roster": "linear-onroster" }`. The login folder stays `linear-<alias>`. If a client already holds that login folder under another name, the CLI reuses that name rather than adding a second entry.
+- `names.json`: optional, to override a server name or name another alias, for example `{ "hopperx": "linear-hx" }`. Without it the name is `linear-<alias>`, except `roster`, which defaults to `linear-onroster` in every client. The login folder always stays `linear-<alias>`. If a client already holds that login folder under another name, the CLI reuses that name rather than adding a second entry.
 
 ## Verification model
 

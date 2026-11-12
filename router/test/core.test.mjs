@@ -41,14 +41,14 @@ import {
 const roster = { alias: "roster", workspaceName: "Roster App", workspaceId: null, workspaceUrl: null };
 
 test("setTomlServerApproval adds writes guard inside the named block", () => {
-  const input = '[mcp_servers.linear-roster]\nurl = "https://mcp.linear.app/mcp"\n\n[features]\nx = true\n';
-  const output = setTomlServerApproval(input, "linear-roster");
+  const input = '[mcp_servers.linear-onroster]\nurl = "https://mcp.linear.app/mcp"\n\n[features]\nx = true\n';
+  const output = setTomlServerApproval(input, "linear-onroster");
   assert.match(output, /default_tools_approval_mode = "writes"/);
   assert.match(output, /\[features\]\nx = true/);
 });
 
 test("Codex server settings allow a slow OAuth handshake", () => {
-  const output = setTomlServerSettings('[mcp_servers.linear-roster]\ncommand = "npx"\n', "linear-roster");
+  const output = setTomlServerSettings('[mcp_servers.linear-onroster]\ncommand = "npx"\n', "linear-onroster");
   assert.match(output, /default_tools_approval_mode = "writes"/);
   assert.match(output, /startup_timeout_sec = 120/);
 });
@@ -68,20 +68,20 @@ test("routing block replaces only its marked section", () => {
 
 test("Codex verification parser reads the final agent message", () => {
   const stdout = [
-    JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: '{"linear-roster":{"id":"r1","name":"Roster App","url":"https://linear.app/example"}}' } }),
+    JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: '{"linear-onroster":{"id":"r1","name":"Roster App","url":"https://linear.app/example"}}' } }),
     JSON.stringify({ type: "turn.completed" })
   ].join("\n");
-  assert.equal(parseCodexVerification(stdout)["linear-roster"].id, "r1");
+  assert.equal(parseCodexVerification(stdout)["linear-onroster"].id, "r1");
 });
 
 test("Claude verification parser reads fenced result JSON", () => {
-  const stdout = JSON.stringify({ is_error: false, result: '```json\n{"linear-roster":{"id":"r1","name":"Roster App"}}\n```' });
-  assert.equal(parseClaudeVerification(stdout)["linear-roster"].name, "Roster App");
+  const stdout = JSON.stringify({ is_error: false, result: '```json\n{"linear-onroster":{"id":"r1","name":"Roster App"}}\n```' });
+  assert.equal(parseClaudeVerification(stdout)["linear-onroster"].name, "Roster App");
 });
 
 test("verification rejects cross-workspace results", () => {
   assert.throws(
-    () => verifyExpected({ "linear-roster": { id: "h1", name: "HopperAI" } }, [roster]),
+    () => verifyExpected({ "linear-onroster": { id: "h1", name: "HopperAI" } }, [roster]),
     /credentials may not be isolated/
   );
 });
@@ -93,7 +93,7 @@ test("verification rejects two names resolving to one workspace ID", () => {
   ];
   assert.throws(
     () => verifyExpected({
-      "linear-roster": { id: "same", name: "Roster App" },
+      "linear-onroster": { id: "same", name: "Roster App" },
       "linear-other": { id: "same", name: "Other" }
     }, workspaces),
     /both resolve to workspace ID/
@@ -105,32 +105,32 @@ test("a new Claude entry is added with the labeled wrapper and the saved-login f
   const calls = [];
   try {
     assert.equal(await ensureClaudeServer(roster, { claudeConfig, run: (c, args) => { calls.push(args); return { status: 0 }; } }), "added");
-    assert.deepEqual(calls[0].slice(0, 5), ["mcp", "add-json", "--scope", "user", "linear-roster"]);
+    assert.deepEqual(calls[0].slice(0, 5), ["mcp", "add-json", "--scope", "user", "linear-onroster"]);
     assert.deepEqual(JSON.parse(calls[0][5]), good());
     assert.ok(!calls[0][5].includes("npx"));
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
 test("repo scope enables one named server and disables the others", () => {
-  const input = "model = \"gpt-test\"\n\n[mcp_servers.linear-roster]\nenabled = false\n";
+  const input = "model = \"gpt-test\"\n\n[mcp_servers.linear-onroster]\nenabled = false\n";
   const output = buildCodexProjectScope(
     input,
-    ["linear-roster", "linear-hopperx", "linear-personal"],
-    "linear-roster"
+    ["linear-onroster", "linear-hopperx", "linear-personal"],
+    "linear-onroster"
   );
   assert.match(output, /model = "gpt-test"/);
-  assert.match(output, /\[mcp_servers\.linear-roster\]\nenabled = true/);
-  assert.match(output, /\[mcp_servers\.linear-roster\][\s\S]*?required = true/);
-  assert.match(output, /\[mcp_servers\.linear-roster\][\s\S]*?startup_timeout_sec = 120/);
+  assert.match(output, /\[mcp_servers\.linear-onroster\]\nenabled = true/);
+  assert.match(output, /\[mcp_servers\.linear-onroster\][\s\S]*?required = true/);
+  assert.match(output, /\[mcp_servers\.linear-onroster\][\s\S]*?startup_timeout_sec = 120/);
   assert.match(output, /\[mcp_servers\.linear-hopperx\]\nenabled = false/);
   assert.match(output, /\[mcp_servers\.linear-personal\]\nenabled = false/);
 });
 
 test("failed repo verification pauses the selected server", () => {
-  const scoped = buildCodexProjectScope("", ["linear-roster", "linear-hopperx"], "linear-roster");
-  const paused = pauseCodexProjectScope(scoped, "linear-roster");
-  assert.match(paused, /\[mcp_servers\.linear-roster\][\s\S]*?enabled = false/);
-  assert.match(paused, /\[mcp_servers\.linear-roster\][\s\S]*?required = false/);
+  const scoped = buildCodexProjectScope("", ["linear-onroster", "linear-hopperx"], "linear-onroster");
+  const paused = pauseCodexProjectScope(scoped, "linear-onroster");
+  assert.match(paused, /\[mcp_servers\.linear-onroster\][\s\S]*?enabled = false/);
+  assert.match(paused, /\[mcp_servers\.linear-onroster\][\s\S]*?required = false/);
   assert.match(paused, /\[mcp_servers\.linear-hopperx\][\s\S]*?enabled = false/);
 });
 
@@ -142,18 +142,18 @@ test("repo scope disables the bundled Linear plugin without changing other plugi
 });
 
 test("configuredLinearServers reads quoted and plain table names", () => {
-  const input = '[mcp_servers.linear-roster]\nurl = "x"\n\n[mcp_servers.linear-roster.env]\nX = "x"\n\n[mcp_servers."linear-personal"]\nurl = "x"\n';
-  assert.deepEqual(configuredLinearServers(input), ["linear-roster", "linear-personal"]);
+  const input = '[mcp_servers.linear-onroster]\nurl = "x"\n\n[mcp_servers.linear-onroster.env]\nX = "x"\n\n[mcp_servers."linear-personal"]\nurl = "x"\n';
+  assert.deepEqual(configuredLinearServers(input), ["linear-onroster", "linear-personal"]);
 });
 
 test("repo scope verification rejects an extra exposed Linear server", () => {
   const servers = parseCodexMcpList([
     "Name             Url  Status   Auth",
-    "linear-roster    x    enabled  OAuth",
+    "linear-onroster    x    enabled  OAuth",
     "linear-personal  x    enabled  OAuth"
   ].join("\n"));
   assert.throws(
-    () => verifyCodexRepoScope(servers, "linear-roster", { installed: false, enabled: false }),
+    () => verifyCodexRepoScope(servers, "linear-onroster", { installed: false, enabled: false }),
     /still exposed/
   );
 });
@@ -164,8 +164,8 @@ test("repo scope verification rejects an enabled bundled Linear plugin", () => {
   }));
   assert.throws(
     () => verifyCodexRepoScope(
-      [{ name: "linear-roster", status: "enabled" }],
-      "linear-roster",
+      [{ name: "linear-onroster", status: "enabled" }],
+      "linear-onroster",
       plugin
     ),
     /bundled Linear plugin is still enabled/
@@ -174,10 +174,10 @@ test("repo scope verification rejects an enabled bundled Linear plugin", () => {
 
 
 test("scope rejects missing transports even for disabled, unselected servers", () => {
-  const valid = { name: "linear-roster", transport: { type: "stdio", command: "npx" } };
+  const valid = { name: "linear-onroster", transport: { type: "stdio", command: "npx" } };
   for (const transport of [undefined, {}, { type: "stdio", command: " " }, { type: "streamable_http", url: "" }]) {
     assert.throws(() => verifyCodexScopeTransports(
-      ["linear-roster", "linear-hopperx"],
+      ["linear-onroster", "linear-hopperx"],
       [valid, { name: "linear-hopperx", enabled: false, transport }]
     ), /linear-hopperx has no valid command or URL/);
   }
@@ -186,9 +186,9 @@ test("scope rejects missing transports even for disabled, unselected servers", (
 
 test("scope accepts complete stdio and HTTP transports", () => {
   assert.doesNotThrow(() => verifyCodexScopeTransports(
-    ["linear-roster", "linear-personal"],
+    ["linear-onroster", "linear-personal"],
     [
-      { name: "linear-roster", transport: { type: "stdio", command: "npx" } },
+      { name: "linear-onroster", transport: { type: "stdio", command: "npx" } },
       { name: "linear-personal", transport: { type: "streamable_http", url: "https://mcp.linear.app/mcp" } }
     ]
   ));
@@ -215,7 +215,7 @@ test("replacement stays parseable with a project override and rolls back on fail
   if (spawnSync("codex", ["--version"]).status !== 0) return t.skip("Codex unavailable");
   const root = await mkdtemp(join(tmpdir(), "router-replacement-"));
   const path = join(root, "config.toml");
-  const previous = '[mcp_servers.linear-roster]\ncommand = "old"\nenabled = false\ndefault_tools_approval_mode = "writes"\n';
+  const previous = '[mcp_servers.linear-onroster]\ncommand = "old"\nenabled = false\ndefault_tools_approval_mode = "writes"\n';
   try {
     await writeFile(path, previous);
     await assert.rejects(replaceCodexConnection(roster, { codexHome: root }, async () => {
@@ -223,7 +223,7 @@ test("replacement stays parseable with a project override and rolls back on fail
       assert.match(current, /command = "node"/);
       assert.match(current, /enabled = false/);
       assert.match(current, /default_tools_approval_mode = "writes"/);
-      const result = spawnSync("codex", ["-c", "mcp_servers.linear-roster.enabled=true", "mcp", "list"], {
+      const result = spawnSync("codex", ["-c", "mcp_servers.linear-onroster.enabled=true", "mcp", "list"], {
         env: { ...process.env, CODEX_HOME: root }, encoding: "utf8"
       });
       assert.equal(result.status, 0, result.stderr);
@@ -243,7 +243,7 @@ test("dry-run replacement makes no config changes", async () => {
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
-const good = (name = "linear-roster") => ({ type: "stdio", command: "node", args: bridgeCommand(roster).slice(1), env: { MCP_REMOTE_CONFIG_DIR: authDir(roster) } });
+const good = (name = "linear-onroster") => ({ type: "stdio", command: "node", args: bridgeCommand(roster).slice(1), env: { MCP_REMOTE_CONFIG_DIR: authDir(roster) } });
 
 async function claudeFixture(servers) {
   const root = await mkdtemp(join(tmpdir(), "router-claude-"));
@@ -265,7 +265,7 @@ test("Codex re-run keeps the wrapper and the enabled setting", async () => {
     await replaceCodexConnection(roster, { codexHome: root }, async () => {});
     const second = await readFile(path, "utf8");
     assert.match(second, /enabled = true/);
-    assert.equal(second.match(/\[mcp_servers\.linear-roster\]/g).length, 1);
+    assert.equal(second.match(/\[mcp_servers\.linear-onroster\]/g).length, 1);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
@@ -273,7 +273,7 @@ test("an old plain-npx Codex entry is moved to the wrapper without losing enable
   const root = await mkdtemp(join(tmpdir(), "router-upgrade-"));
   const path = join(root, "config.toml");
   try {
-    await writeFile(path, '[mcp_servers.linear-roster]\ncommand = "npx"\nargs = ["-y","mcp-remote@0.15.1"]\nenabled = true\n');
+    await writeFile(path, '[mcp_servers.linear-onroster]\ncommand = "npx"\nargs = ["-y","mcp-remote@0.15.1"]\nenabled = true\n');
     await replaceCodexConnection(roster, { codexHome: root }, async () => {});
     const text = await readFile(path, "utf8");
     assert.match(text, /command = "node"/);
@@ -282,7 +282,7 @@ test("an old plain-npx Codex entry is moved to the wrapper without losing enable
 });
 
 test("an existing good Claude entry is left alone", async () => {
-  const { root, claudeConfig } = await claudeFixture({ "linear-roster": good() });
+  const { root, claudeConfig } = await claudeFixture({ "linear-onroster": good() });
   const calls = [];
   try {
     const result = await ensureClaudeServer(roster, { claudeConfig, run: (...call) => { calls.push(call); return { status: 0 }; } });
@@ -295,8 +295,8 @@ const oldEntry = () => ({ type: "stdio", command: "npx", args: ["-y", "mcp-remot
 const otherServers = { pencil: { type: "stdio", command: "pencil" }, "linear-hopperx": { type: "stdio", command: "keep-me" } };
 
 async function replaceFixture() {
-  const fixture = await claudeFixture({ ...otherServers, "linear-roster": oldEntry() });
-  const text = JSON.stringify({ topLevel: "kept", mcpServers: { ...otherServers, "linear-roster": oldEntry() } }, null, 2);
+  const fixture = await claudeFixture({ ...otherServers, "linear-onroster": oldEntry() });
+  const text = JSON.stringify({ topLevel: "kept", mcpServers: { ...otherServers, "linear-onroster": oldEntry() } }, null, 2);
   await writeFile(fixture.claudeConfig, text);
   return { ...fixture, text };
 }
@@ -312,10 +312,10 @@ test("replacing a Claude entry never runs remove and keeps every other entry", a
     assert.equal(written.topLevel, "kept");
     assert.deepEqual(written.mcpServers.pencil, otherServers.pencil);
     assert.deepEqual(written.mcpServers["linear-hopperx"], otherServers["linear-hopperx"]);
-    assert.equal(written.mcpServers["linear-roster"].command, "node");
+    assert.equal(written.mcpServers["linear-onroster"].command, "node");
     const backups = (await readdir(root)).filter((n) => n.includes(".router-backup-"));
     assert.equal(backups.length, 1);
-    assert.equal(JSON.parse(await readFile(join(root, backups[0]), "utf8")).mcpServers["linear-roster"].command, "npx");
+    assert.equal(JSON.parse(await readFile(join(root, backups[0]), "utf8")).mcpServers["linear-onroster"].command, "npx");
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
@@ -336,7 +336,7 @@ test("a Claude config that changes during the update is not overwritten", async 
     let changed;
     await assert.rejects(
       ensureClaudeServer(roster, { claudeConfig, beforeWrite: async () => { changed = JSON.stringify({ mcpServers: { late: { command: "x" } } }); await writeFile(claudeConfig, changed); } }),
-      /changed while linear-roster was being updated/
+      /changed while linear-onroster was being updated/
     );
     assert.equal(await readFile(claudeConfig, "utf8"), changed);
   } finally { await rm(root, { recursive: true, force: true }); }
@@ -372,7 +372,7 @@ test("Codex keeps its own name for the same login folder", async () => {
 });
 
 test("repo scope never writes a command or args into a project config", () => {
-  const output = buildCodexProjectScope("", ["linear-roster", "linear-hopperx"], "linear-hopperx");
+  const output = buildCodexProjectScope("", ["linear-onroster", "linear-hopperx"], "linear-hopperx");
   assert.doesNotMatch(output, /command\s*=|args\s*=|MCP_REMOTE_CONFIG_DIR/);
 });
 
@@ -387,13 +387,13 @@ test("a display-name change keeps the saved id and does not ask to delete the pi
   const [filled] = applyPins([{ alias: "roster", workspaceName: "Roster Renamed", workspaceId: null, workspaceUrl: null }], pin);
   assert.equal(filled.workspaceId, "id-1");
   assert.equal(filled.workspaceName, "Roster Renamed");
-  assert.doesNotThrow(() => verifyExpected({ "linear-roster": { id: "id-1", name: "Roster Renamed Again" } }, [filled]));
+  assert.doesNotThrow(() => verifyExpected({ "linear-onroster": { id: "id-1", name: "Roster Renamed Again" } }, [filled]));
 });
 
 test("a live workspace id that differs from the saved id fails the check", () => {
   const [filled] = applyPins([{ alias: "roster", workspaceName: null, workspaceId: null, workspaceUrl: null }], pin);
-  assert.throws(() => verifyExpected({ "linear-roster": { id: "id-2", name: "Roster App" } }, [filled]), /changed from workspace ID id-1 to id-2/);
-  assert.doesNotThrow(() => verifyExpected({ "linear-roster": { id: "id-1", name: "Roster App" } }, [filled]));
+  assert.throws(() => verifyExpected({ "linear-onroster": { id: "id-2", name: "Roster App" } }, [filled]), /changed from workspace ID id-1 to id-2/);
+  assert.doesNotThrow(() => verifyExpected({ "linear-onroster": { id: "id-1", name: "Roster App" } }, [filled]));
 });
 
 test("no pin and no name stays unnamed so the clear error fires", () => {
@@ -405,7 +405,7 @@ test("pins are saved without tokens and read back", async () => {
   const root = await mkdtemp(join(tmpdir(), "router-pins-"));
   const pinsFile = join(root, "pins.json");
   try {
-    const [saved] = pinsFromResult({ "linear-roster": { id: "id-1", name: "Roster App", url: "u", access_token: "x" } }, [roster]);
+    const [saved] = pinsFromResult({ "linear-onroster": { id: "id-1", name: "Roster App", url: "u", access_token: "x" } }, [roster]);
     await savePins([saved], { pinsFile });
     assert.deepEqual(await readPins({ pinsFile }), { roster: { name: "Roster App", id: "id-1", url: "u" } });
     assert.doesNotMatch(await readFile(pinsFile, "utf8"), /token/);
@@ -419,7 +419,7 @@ test("a mismatched live id names both ids and leaves the saved pin untouched", a
     await savePins([{ alias: "roster", workspaceName: "Roster App", workspaceId: "id-1", workspaceUrl: "u" }], { pinsFile });
     const before = await readFile(pinsFile, "utf8");
     const [filled] = applyPins([{ alias: "roster", workspaceName: null, workspaceId: null, workspaceUrl: null }], await readPins({ pinsFile }));
-    assert.throws(() => verifyExpected({ "linear-roster": { id: "id-9", name: "Elsewhere" } }, [filled]), /id-1 to id-9/);
+    assert.throws(() => verifyExpected({ "linear-onroster": { id: "id-9", name: "Elsewhere" } }, [filled]), /id-1 to id-9/);
     await assert.rejects(savePins([{ alias: "roster", workspaceName: "Elsewhere", workspaceId: "id-9", workspaceUrl: "x" }], { pinsFile }), /pinned to workspace ID id-1.*id-9/);
     assert.equal(await readFile(pinsFile, "utf8"), before);
     await savePins([{ alias: "roster", workspaceName: "Roster New Name", workspaceId: "id-1", workspaceUrl: "u" }], { pinsFile });
@@ -427,27 +427,32 @@ test("a mismatched live id names both ids and leaves the saved pin untouched", a
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
-test("clean install: a names.json entry sets the server name in both clients and keeps the login folder", async () => {
-  const [named] = applyNames([roster], { roster: "linear-onroster" });
-  assert.equal(serverName(named), "linear-onroster");
-  assert.equal(serverName(applyNames([{ alias: "hopperx" }], { roster: "linear-onroster" })[0]), "linear-hopperx");
-  assert.equal(serverName(roster), "linear-roster");
-  assert.equal(authDir(named), join(homedir(), ".mcp-auth", "linear-roster"));
+test("clean install with no local files: roster is linear-onroster in both clients, login folder stays linear-roster", async () => {
+  assert.equal(serverName(roster), "linear-onroster");
+  assert.equal(serverName({ alias: "hopperx" }), "linear-hopperx");
+  assert.equal(serverName({ alias: "personal" }), "linear-personal");
+  assert.equal(authDir(roster), join(homedir(), ".mcp-auth", "linear-roster"));
   const { root, claudeConfig } = await claudeFixture({});
   const calls = [];
   try {
-    await ensureClaudeServer(named, { claudeConfig, run: (c, args) => { calls.push(args); return { status: 0 }; } });
+    await ensureClaudeServer(roster, { claudeConfig, run: (c, args) => { calls.push(args); return { status: 0 }; } });
     assert.equal(calls[0][4], "linear-onroster");
     const definition = JSON.parse(calls[0][5]);
     assert.equal(definition.env.MCP_REMOTE_CONFIG_DIR, join(homedir(), ".mcp-auth", "linear-roster"));
     assert.ok(definition.args.includes("workspace=roster"));
-    await replaceCodexConnection(named, { codexHome: root }, async () => {});
+    await replaceCodexConnection(roster, { codexHome: root }, async () => {});
     const text = await readFile(join(root, "config.toml"), "utf8");
     assert.match(text, /\[mcp_servers\.linear-onroster\]/);
     assert.doesNotMatch(text, /mcp_servers\.linear-roster/);
     assert.ok(text.includes(`MCP_REMOTE_CONFIG_DIR = ${JSON.stringify(join(homedir(), ".mcp-auth", "linear-roster"))}`));
     assert.ok(text.includes("workspace=roster"));
   } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test("an optional names.json overrides the default name and adds names for other aliases", () => {
+  const [roster2, hopperx] = applyNames([{ alias: "roster" }, { alias: "hopperx" }], { roster: "linear-custom", hopperx: "linear-hx" });
+  assert.deepEqual([serverName(roster2), serverName(hopperx)], ["linear-custom", "linear-hx"]);
+  assert.equal(serverName(applyNames([{ alias: "roster" }], {})[0]), "linear-onroster");
 });
 
 test("rerunning setup for roster adds no second entry in either client", async () => {
@@ -481,4 +486,16 @@ test("installing the skill points it at this package's real CLI path", async () 
     assert.ok(text.includes(join(packageRoot, "bin", "linear-workspace-router.mjs")));
     assert.ok(!text.includes("{{ROUTER_BIN}}"));
   } finally { await rm(home, { recursive: true, force: true }); }
+});
+
+test("the package ships everything the wrapper and the installed skill need, with no personal paths", async () => {
+  const root = join(import.meta.dirname, "..");
+  const pkg = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+  for (const entry of ["bin", "src", "skill"]) assert.ok(pkg.files.includes(entry), `${entry} must be packaged`);
+  for (const file of ["bin/linear-bridge-label.mjs", "bin/shim/open", "bin/shim/launcher-page.mjs", "src/core.mjs"]) {
+    assert.ok((await readFile(join(root, file), "utf8")).length > 0, `${file} must exist`);
+  }
+  const skill = await readFile(join(root, "skill", "linear-workspace-router", "SKILL.md"), "utf8");
+  assert.ok(skill.includes("{{ROUTER_BIN}}"));
+  assert.doesNotMatch(skill, /\/Users\//);
 });

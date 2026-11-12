@@ -21,10 +21,12 @@ export function folderName(workspace) {
   return `linear-${workspace.alias}`;
 }
 
-// Optional local names.json maps an alias to the server name you want, for example { "roster": "linear-onroster" }.
-// The login folder always stays linear-<alias>. Without an entry the name is linear-<alias>.
+// Roster's server is named linear-onroster in every client; its login folder stays linear-roster.
+// Other aliases are linear-<alias>. An optional local names.json can override or add a name for any alias.
+const DEFAULT_SERVER_NAMES = { roster: "linear-onroster" };
+
 export function serverName(workspace) {
-  return workspace.serverName || folderName(workspace);
+  return workspace.serverName || DEFAULT_SERVER_NAMES[workspace.alias] || folderName(workspace);
 }
 
 export function authDir(workspace) {
