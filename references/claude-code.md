@@ -13,6 +13,8 @@ Inspect only servers relevant to the approved plan. Do not inspect OAuth storage
 
 ## Add and authenticate
 
+Preferred: use the bundled router (`router/bin/linear-workspace-router.mjs`, next to the installed skill; see the [router README](../router/README.md)). It adds each Claude Code server through the labeled wrapper and never runs `claude mcp remove`. The commands below are the manual fallback.
+
 Use user scope so the connection works across local projects. For multiple workspaces, pin a tested `mcp-remote` version and give each named server its own credential directory:
 
 ```bash
@@ -24,7 +26,7 @@ claude mcp add --transport stdio --scope user linear-example \
 
 The `workspace=example` parameter labels the OAuth URL; the user still chooses the workspace in Linear. Start a fresh Claude Code process to trigger bridge OAuth. `claude mcp login` is for Claude's direct HTTP connection, not this stdio bridge.
 
-If `linear-example` already exists as direct HTTP at user scope, confirm its intended route, run `claude mcp remove --scope user linear-example`, then add the bridge with the same name. The user must approve OAuth again. Do not inspect or move credentials.
+If `linear-example` already exists as direct HTTP at user scope, `claude mcp add` will not overwrite it, and removing it first leaves Claude Code without that server until the add succeeds. By hand: confirm its intended route, copy `~/.claude.json` to a timestamped backup, run `claude mcp remove --scope user linear-example`, then add the bridge with the same name straight away. If the add fails, restore the backup. The user must approve OAuth again, because a bridge is a different login from a direct HTTP connection. Do not inspect or move credentials. The router avoids the gap by editing only that one entry in one atomic write, after the same kind of backup.
 
 Also run `claude mcp list` from each repo in scope. Claude can load a repo's older local or project server in addition to the user-level named bridges. Confirm the intended route, remove obsolete direct entries with `claude mcp remove --scope local <old-name>` or `--scope project`, and check that the repo's `.claude/settings.local.json` does not auto-approve writes through the old name. Restart open Claude panes after the change. If an OAuth URL lacks `workspace=<alias>`, identify the server that opened it before continuing; a direct HTTP server is still active.
 
@@ -49,6 +51,8 @@ Use the exact named server.
 Call `get_workspace` when available and record its immutable workspace ID, name, and URL. If unavailable, record the complete team list, require user confirmation, and mark workspace identity and credential isolation as unverified. Never treat team names alone as proof.
 
 When `get_workspace` succeeds, also call `list_teams` and record the returned teams.
+
+A tool call that is refused in this check is a permission problem: the tool is missing from `--allowedTools`. It is not a login problem, so do not sign in again. See [troubleshooting](troubleshooting.md).
 
 When direct tool calls could reuse the current process, launch a fresh check and allow only those read tools:
 

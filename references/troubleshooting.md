@@ -8,13 +8,37 @@ Stop setup and do not repeat login. Confirm the existing server name, expected w
 
 Run `codex mcp list` from both an unscoped directory and each affected repo. Then verify the exact expected workspace ID through the named server in a fresh read-only process. Report config parsing, workspace identity, and plugin state separately: one passing does not prove the others.
 
+## Permission, sign-in, config, or model: which problem is it?
+
+Fix only the one you have. A new sign-in repairs only the second.
+
+| What you see | Problem | What to do |
+| --- | --- | --- |
+| A tool call is refused, or waits for approval (Codex write tools; Claude `-p` with `--permission-mode dontAsk` and a tool missing from `--allowedTools`) | Permission | Fix the allow list or approve the call. Do not sign in again. |
+| A server reports it needs authentication, or a sign-in page opens | Sign-in | Sign in once, from one process that stays running. A saved login that can refresh reconnects without a browser. |
+| The client cannot parse its config, or a server has no command or URL | Config | Repair the definition. Keep the same arguments and login folder. No sign-in. |
+| `codex exec` says the default model is not allowed for your account | Verification model | Pass an allowed model (`-m`, or the router's `--model`). No sign-in. |
+| The workspace ID differs from the saved one | Identity | Stop before writes. See Wrong workspace after OAuth. |
+
+Report each separately. One passing does not prove the others.
+
 ## Linear authorization tabs keep opening
 
-Check which client owns the running `mcp-remote` processes and which named servers are enabled in fresh client config. Several agent panes can each start a bridge; if OAuth does not finish, later panes can open more tabs. A `workspace=<alias>` URL label identifies the bridge but does not prove login succeeded, and Linear's consent page drops it. Only one process owns a sign-in at a time; when it exits (a startup timeout or a closed pane), the next waiting process takes over and opens a fresh tab, so approving an old tab saves nothing. Sign in once, from one process that stays alive until the token file appears, and leave named servers off in user config so only the repos that need them start them. The optional `router/` wrapper shows a labeled launcher page that marks itself ended when its bridge stops.
+Check which client owns the running `mcp-remote` processes and which named servers are enabled in fresh client config. Several agent panes can each start a bridge; if OAuth does not finish, later panes can open more tabs. A `workspace=<alias>` URL label identifies the bridge but does not prove login succeeded, and Linear's consent page drops it. Only one process owns a sign-in at a time; when it exits (a startup timeout or a closed pane), the next waiting process takes over and opens a fresh tab. Do not rely on an old tab: its request belonged to a process that has exited. (`mcp-remote` 0.15.1's source says a takeover process can still redeem an earlier request's code, but that is untested here.) Sign in once, from one process that stays alive until the saved login appears, and leave named servers off in user config so only the repos that need them start them. The router's wrapper shows one labeled page that marks itself ended when its process stops; see the known issue below.
 
-Pause automatic startup for the affected named servers before starting another OAuth attempt. In Codex, set `enabled = false` in user config and in any repo override that enables the server; confirm with `codex mcp list` from those repos. In Claude Code, remove an always-on user-scope server and add it back at the needed scope after the controlled login. Stop only the exact old Linear bridge processes or restart their panes. Do not clear or inspect credential stores as a first step.
+Pause automatic startup for the affected named servers before starting another OAuth attempt. In Codex, set `enabled = false` in user config and in any repo override that enables the server; confirm with `codex mcp list` from those repos. In Claude Code, pause an always-on user-scope server by removing it only after copying `~/.claude.json` to a timestamped backup, and add it back at the needed scope after the controlled login. The router never removes a Claude server for you. Stop only the exact old Linear bridge processes or restart their panes. Do not clear or inspect credential stores as a first step.
 
 Check the pinned `mcp-remote` release notes. Version 0.14.5 fixed OAuth retries after a follower timeout; do not leave a repeatedly retrying setup pinned to 0.14.3. Re-enable one server in one client process, complete its browser callback, and verify the workspace with a read-only call before re-enabling it in agent panes. If that fails, leave the server disabled and report the failure.
+
+## The sign-in page still shows a working button
+
+The router's sign-in page checks every 3 seconds whether anything answers on its request's local port. When the process that owned a sign-in exits, a waiting process takes over the same port within a fraction of a second. If that lands between two checks, the old page never sees a gap and keeps a working button for a request whose process has exited.
+
+Stand-in tests (not real bridges) showed a gap of several seconds ended the page, and a gap of about 0.3 second left it live in two of three trials. Whether approving such a page still completes the sign-in is untested. Use the page with the newest "Opened" time, close older ones, and confirm with a read-only `check`. Known issue, not fixed in this release.
+
+## Roster has a different name in each client
+
+The server name is only a label. The login lives in the folder named by `MCP_REMOTE_CONFIG_DIR` (for `roster`, `~/.mcp-auth/linear-roster`). The router names the `roster` alias `linear-onroster` in both clients and reuses whatever name a client already has for that folder, so it never adds a second entry. If two entries in one client point at the same folder, keep the one your routing guidance names, and remove the other only after confirming it is unused. Renaming a server does not need a new sign-in as long as its `MCP_REMOTE_CONFIG_DIR` and `mcp-remote` arguments stay the same.
 
 ## Wrong workspace after OAuth
 

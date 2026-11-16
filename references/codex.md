@@ -13,7 +13,9 @@ Inspect only servers relevant to the approved plan. Do not inspect OAuth storage
 
 ## Add and authenticate
 
-For multiple workspaces, use a separate `mcp-remote` bridge for each named server (optionally through the labeled wrapper in [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/main/router), which keeps the same arguments and credential folder). Verification runs may need an explicit model the account allows; pass it with `--model` rather than changing the global model. Pin a tested `mcp-remote` version and give each server a separate credential directory. For example:
+Preferred: use the bundled router (`router/bin/linear-workspace-router.mjs`, next to the installed skill; see the [router README](../router/README.md)). It writes each Codex server with the labeled wrapper, keeps the same `mcp-remote` arguments and login folder as the plain command, and leaves a working entry alone. The commands below are the manual fallback.
+
+For multiple workspaces, use a separate `mcp-remote` bridge for each named server. Pin a tested `mcp-remote` version and give each server a separate credential directory. For example:
 
 ```bash
 codex mcp add linear-example \
@@ -75,6 +77,8 @@ codex exec -c 'mcp_servers.linear-example.enabled=true' --ephemeral --skip-git-r
 
 After each later login, repeat the available fresh checks for all named Linear servers. Compare immutable workspace IDs with the first confirmed result when IDs are available.
 
+If `codex exec` rejects the default model for your account, pass an allowed model with `-m <model>` (the router's `--model` does this). That is not a sign-in or config failure, so do not sign in again. A write tool that waits for approval is also not a login problem; `default_tools_approval_mode = "writes"` asks by design.
+
 ## Routing
 
 Add or update a clearly marked `Linear routing` section in `~/.codex/AGENTS.md`. Preserve all other instructions. Prefer named servers over a bundled Linear plugin.
@@ -90,7 +94,7 @@ Before writing any repo override, check every referenced server, including those
 In the repo's `.codex/config.toml`, enable the intended named server and disable every other known Linear server:
 
 ```toml
-[mcp_servers.linear-roster]
+[mcp_servers.linear-onroster]
 enabled = true
 required = true
 startup_timeout_sec = 120
@@ -102,7 +106,7 @@ enabled = false
 enabled = false
 ```
 
-Do not copy OAuth data or duplicate full server blocks when an `enabled` override is enough. Preserve unrelated project settings.
+Here `linear-onroster` is the router's name for the alias `roster`; its login folder is still `~/.mcp-auth/linear-roster`. Use whatever server names your global config defines. Do not copy OAuth data or duplicate full server blocks when an `enabled` override is enough. The router's `scope` command never writes a `command` or `args` into a project file. Preserve unrelated project settings.
 
 `required = true` makes Codex report a startup failure if the selected Linear server cannot initialize, instead of silently leaving its tools out of the session. Use it only for the repo's confirmed Linear server.
 
@@ -123,7 +127,7 @@ codex mcp list
 codex plugin list --json
 ```
 
-Pass the connector check only when the intended named server is enabled, every other Linear MCP server is disabled, and every installed `linear@…` plugin is disabled or absent. Inspect all installed Linear plugin IDs, including `linear@openai-curated-remote`; do not look up only the old ID or stop at the first disabled match. Missing, unreadable, or unrecognized plugin state fails the check. A config value of `false` is not proof of the installed state. If the fresh listing still reports an enabled Linear plugin, have the user disable that plugin through `/plugins`, recheck, and keep Linear writes paused until it passes. Also confirm all named Linear servers are disabled outside scoped repos. If the project is untrusted, Codex skips `.codex/config.toml`; stop and ask the user to trust it before retrying.
+Pass the connector check only when the intended named server is enabled, every other Linear MCP server is disabled, and every installed `linear@…` plugin is disabled or absent. Inspect all installed Linear plugin IDs, including `linear@openai-curated-remote`; do not look up only the old ID or stop at the first disabled match. Missing, unreadable, or unrecognized plugin state fails the check. A config value of `false` is not proof of the installed state. If the fresh listing still reports an enabled Linear plugin, remove it with `codex plugin remove <pluginId>` (for example `linear@openai-curated-remote`) or have the user turn it off in `/plugins`. Account-managed remote plugins ignore `config.toml`, so removal is the reliable fix. Recheck, and keep Linear writes paused until it passes. Also confirm all named Linear servers are disabled outside scoped repos. If the project is untrusted, Codex skips `.codex/config.toml`; stop and ask the user to trust it before retrying.
 
 Then launch a fresh read-only identity check from that repo using only the intended named server. Confirm its workspace ID and name match the approved route. Restart every existing Codex pane after success.
 
