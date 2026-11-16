@@ -19,7 +19,7 @@ Use the packaged CLI for setup. Do not recreate the OAuth sequence by hand unles
 
 3. Show the plan. Keep one named server per workspace.
 4. Run setup without `--dry-run`.
-5. Match the `workspace=<alias>` marker in each OAuth URL to the workspace being set up, then let the user choose that workspace in Linear. The marker does not select it.
+5. When a sign-in is needed, one labeled page opens. Check that it names the workspace being set up, then have the user press its button and choose that workspace on Linear's page. Neither the page nor the `workspace=<alias>` marker selects it.
 6. Show the discovered workspace name and URL. Require the user to confirm them.
 7. Pin the workspace ID and require the CLI’s read-only isolation check to pass after every login.
 8. Stop immediately if an earlier connection changes workspaces.
@@ -28,10 +28,10 @@ Use the packaged CLI for setup. Do not recreate the OAuth sequence by hand unles
 
 ## How the connections are built
 
-- Every named server runs the labeled wrapper: `node <router>/bin/linear-bridge-label.mjs https://mcp.linear.app/mcp --authorize-param workspace=<alias>`. It runs the pinned `mcp-remote` and, when Linear needs a sign-in, opens one page titled with the workspace name and a "Continue to Linear for <WORKSPACE>" button. That page replaces the raw Linear tab. Its button turns off when the request ends. Linear's own consent page still does not show the workspace; pick it there by name.
+- Every named server runs the labeled wrapper (this is the one supported setup path; use the manual steps in the parent skill only when `node` is unavailable): `node <router>/bin/linear-bridge-label.mjs https://mcp.linear.app/mcp --authorize-param workspace=<alias>`. It runs the pinned `mcp-remote` and, when Linear needs a sign-in, opens one page titled with the workspace name and a "Continue to Linear for <WORKSPACE>" button. That page replaces the raw Linear tab. The page shows the saved workspace name, or, with no saved name, asks the user to choose the workspace they intended for the alias. Its button turns off when the process that asked for it stops. Linear's own consent page still does not show the workspace; pick it there by name.
 - The saved login lives in `~/.mcp-auth/linear-<alias>`. The wrapper and the plain command hash to the same folder, so existing logins keep working.
-- The server name can differ from the folder. If a client already holds that login folder under another name (for example Roster: server `linear-onroster` in both clients, login folder `linear-roster`), the router reuses that name and never adds a second entry.
-- Saved workspace pins: after a check or setup confirms a workspace through its named server, the router saves its alias, name, ID and URL in `pins.json` next to the CLI (no tokens). Later `check` and `scope` runs read the saved ID, so `--workspace roster` works with no name typed. The ID is what counts: if Linear shows a new display name for the same ID, the check passes and the saved name updates. If the live ID differs, the check fails and shows both IDs, and the saved pin is never overwritten. Only edit `pins.json` by hand if you really mean to point an alias at a different workspace.
+- The server name can differ from the folder. The login folder is always `~/.mcp-auth/linear-<alias>`. The server name is `linear-<alias>`, except the alias `roster`, which is named `linear-onroster` in both clients (login folder `linear-roster`, marker `workspace=roster`). An optional `names.json` next to the CLI changes names. If a client already holds a login folder under another name, the router reuses that name and never adds a second entry. Renaming a server does not move its login.
+- Saved workspace pins: after a check or setup confirms a workspace through its named server, the router saves its alias, name, ID and URL in `pins.json` next to the CLI (no tokens). Later `check` and `scope` runs read the saved ID, so `--workspace roster` works with no name typed. The ID is what counts: if Linear shows a new display name for the same ID, the check passes and the saved name updates. If the live ID differs, the check fails and shows both IDs, and the saved pin is never overwritten. With no saved pin and no name typed, the CLI stops and asks for `alias=expected-workspace`. Only edit `pins.json` by hand if you really mean to point an alias at a different workspace.
 - A server that already uses the wrapper and the right folder is left alone and only verified. The router never rewrites it with a plain `npx` command, and keeps its `enabled` setting.
 - Codex setup replaces the complete named connection atomically and rolls back if verification fails. New Codex connections start disabled; the router does not change `enabled` on existing ones.
 - Claude Code setup never removes a server. A new server is added with `claude mcp add-json`. An existing one is replaced by editing only that one entry in `~/.claude.json` in a single atomic rename, after a timestamped backup and a check that the file did not change meanwhile. If anything fails, the old entry stays in place. Do not run `claude mcp remove` by hand for these servers.
@@ -41,6 +41,18 @@ Use the packaged CLI for setup. Do not recreate the OAuth sequence by hand unles
   - Config rollback never rolls back credentials or an OAuth workspace choice. Do not repeat login/setup to repair a config parse error; inspect config and use read-only checks first.
 
 The plugin guard checks all installed `linear@…` IDs, including `linear@openai-curated-remote`. Missing or unreadable plugin state is a failed check. Scope config disables both shipped IDs, but the fresh plugin listing must confirm they are disabled. If it still reports enabled, stop Linear writes and remove it with `codex plugin remove <pluginId>` (account-managed remote plugins ignore `config.toml`); do not report routing as fully verified.
+
+## Tell failures apart
+
+- A refused or waiting tool call is a permission problem (Codex write approval, or Claude `-p` with `dontAsk` and a missing `--allowedTools` entry). Fix the allow list or approve the call. Do not sign in again.
+- A server that says it needs authentication, or opens the sign-in page, is a sign-in problem. Sign in once, from one process.
+- A parse error or a server with no command is a config problem. Repair the definition; no sign-in is needed.
+- A rejected default model is a verification problem. Pass `--model`.
+- Do not start a sign-in to fix anything except a missing or unrefreshable login. Healthy servers reconnect from their saved login without a browser.
+
+## Known limitation
+
+The sign-in page checks every 3 seconds whether anything answers on its local port. If a waiting process takes over that port quickly after the first one exits, an old page can keep a working button for a request whose process is gone. Use the page with the newest "Opened" time and close older ones. Not fixed in this release; details are in the router README.
 
 Never print, inspect, copy, or repurpose OAuth tokens.
 

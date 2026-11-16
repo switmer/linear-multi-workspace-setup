@@ -17,11 +17,7 @@ It guides Codex or Claude Code through a safe setup:
 7. Scope each Codex repo to only its intended Linear connection.
 8. Install clear workspace-routing guidance.
 
-For local multi-workspace OAuth, the setup guide can label each browser URL with `workspace=<alias>` through `mcp-remote`. The label helps you match the sign-in to its terminal; you still select the workspace in Linear.
-
-## Optional CLI
-
-The [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/main/router) folder holds a small Node CLI (`linear-workspace-router`) that does the setup, check and repo-scope steps for you: it runs each connection through a wrapper that shows a labeled sign-in page, replaces Claude Code entries without removing them first, reuses an existing server name for the same credential folder, and saves each confirmed workspace ID so later checks compare IDs. Saved IDs and custom server names stay in local files that Git ignores. `npx skills add` copies this whole repo into the installed skill, so the CLI is then at `<installed skill folder>/router/bin/linear-workspace-router.mjs`; `node <that path> install-skill` writes the CLI skill with that real path filled in. You can also clone the repo and run it from there. Clean installs name Roster's server `linear-onroster` by default (login folder `linear-roster`); other aliases use `linear-<alias>`.
+Each sign-in request carries a `workspace=<alias>` marker through `mcp-remote`, and the router opens a page that names the workspace before Linear's own page. The marker and the page help you match a sign-in to its connection; you still select the workspace on Linear's page.
 
 ## Install
 
@@ -31,6 +27,22 @@ The [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/mai
 npx skills add switmer/linear-multi-workspace-setup \
   --skill linear-multi-workspace-setup
 ```
+
+This copies the whole repository into your agent's skills folder, including the [`router/`](router/README.md) command-line tool. It needs Node.js 20 or newer to run. Find it next to the installed `SKILL.md`, at `router/bin/linear-workspace-router.mjs`. The skill tells your agent where to look, so you do not need the path yourself.
+
+## Recommended setup path: the bundled router
+
+The agent uses the `router/` tool for setup, checks, and repo scoping. It is not published to npm; it ships inside this repository. It:
+
+- runs every server through a wrapper that opens one labeled sign-in page, showing the workspace name, instead of a raw Linear tab;
+- leaves a working connection alone, and never removes a Claude Code server before replacing it;
+- reuses an existing server name for the same login folder, so a re-run adds no duplicate;
+- saves each confirmed workspace ID in a local file (`pins.json`, no tokens, ignored by Git) and compares IDs on later checks, so a changed display name passes and a different workspace fails;
+- avoids unneeded sign-ins: a healthy saved login reconnects without a browser.
+
+Naming: a server is named `linear-<alias>`, except the alias `roster`, which is named `linear-onroster` in both clients. Its saved login stays in `~/.mcp-auth/linear-roster`. The server name is only a label; the login folder holds the login.
+
+The manual steps in the skill and in the [Codex](references/codex.md) and [Claude Code](references/claude-code.md) guides are a fallback for when Node.js is unavailable or you use another client.
 
 If you know which workspaces you want, ask:
 
@@ -62,7 +74,7 @@ When Linear exposes `get_workspace`, the skill records its immutable workspace I
 
 Global named connections make each workspace available to Codex, but most repos need only one. For a confirmed repo-to-workspace route, the skill can add a small `.codex/config.toml` override that enables the intended Linear server and disables the others.
 
-Before writing overrides, it requires complete server definitions for every referenced connection, including disabled ones. Replacement must keep config valid throughout and restore the prior config after failure. It checks all installed `linear@…` plugin IDs, including the remote variant, rather than trusting config flags alone.
+Before writing overrides, it requires complete server definitions for every referenced connection, including disabled ones. For Codex, replacement must keep config valid throughout and restore the prior config after failure. It checks all installed `linear@…` plugin IDs, including the remote variant, rather than trusting config flags alone.
 
 It then checks the loaded MCP and plugin state from that repo and verifies the workspace identity in a fresh process. The check fails if the project is untrusted, another Linear connection remains exposed, or the workspace does not match. Existing panes must be restarted after the config changes.
 
@@ -73,6 +85,14 @@ It then checks the loaded MCP and plugin state from that repo and verifies the w
 - Setup uses read-only checks and stops before writes on an identity mismatch.
 - Work areas using Jira or another tracker do not receive Linear connections.
 - A bundled Linear connector is changed only with user approval and must be checked from a fresh process.
+
+## Known limitations
+
+- The sign-in page can keep a working button for a request whose process has exited, when a new process takes over the same local port within a fraction of a second. Use the newest page. Not fixed yet; see the [router README](router/README.md#known-limitation-a-page-can-look-live-after-a-quick-takeover).
+- Linear's own consent page does not show the workspace. Pick it by name there.
+- Claude Code has no overwrite command. If verification fails after the router writes a Claude entry, the new entry stays and a timestamped backup of `~/.claude.json` holds the previous config. Codex configs are restored automatically.
+- Config recovery never undoes a sign-in or a workspace choice made in the browser.
+- The router is not on npm, so there is no `npx linear-workspace-router`. Run it with `node` from the installed skill folder or a clone.
 
 ## Support
 
@@ -85,6 +105,7 @@ Local named MCP connections do not change the hosted ChatGPT Linear plugin.
 ## Documentation
 
 - [Canonical Agent Skill](SKILL.md)
+- [Router CLI](router/README.md)
 - [Codex setup](references/codex.md)
 - [Claude Code setup](references/claude-code.md)
 - [Generic MCP guidance](references/generic-mcp.md)

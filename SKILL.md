@@ -39,18 +39,45 @@ For a complete intake, show the full plan before making changes:
 | Example area | Linear | `linear-example` | Example Workspace |
 | Other area | Jira | None | None |
 
-Use lowercase `linear-<alias>` names. Resolve duplicate or unclear aliases before continuing. Ask for confirmation of the plan.
+Name each server `linear-<alias>`. The bundled router has one built-in exception: the alias `roster` is named `linear-onroster` in both clients, while its login folder stays `linear-roster`. The login folder always follows the alias, never the server name. Resolve duplicate or unclear aliases before continuing. Ask for confirmation of the plan.
 
 For incremental intake, show the cumulative map plus the next proposed row. Confirm that row before changing configuration or starting OAuth. After the last connection is verified, confirm the final map before installing routing guidance.
 
 ## 3. Configure and authenticate
+
+### Preferred: the bundled router
+
+This skill ships a command-line tool in `router/`, next to this SKILL.md. Find it from the folder this file was loaded from: `<this skill's folder>/router/bin/linear-workspace-router.mjs`. It needs Node.js 20 or newer. When `node` is available and the client is Codex or Claude Code, use it for Sections 3 to 5. It does what the manual steps below describe, and also:
+
+- runs every server through a wrapper that opens one labeled sign-in page instead of a raw Linear tab;
+- leaves a working connection alone and never rewrites it with a plain `npx` command;
+- replaces a Claude Code entry without removing it first, and restores a Codex config when verification fails;
+- reuses an existing server name for the same login folder, so it never adds a second entry;
+- saves each confirmed workspace ID (`pins.json`, no tokens) and compares IDs on later checks.
+
+Steps, confirming with the user at each one:
+
+1. Dry run. It changes nothing and signs in nowhere. Show the plan.
+
+   ```bash
+   node <skill folder>/router/bin/linear-workspace-router.mjs --dry-run --client both \
+     --workspace alias="Expected Workspace"
+   ```
+
+2. The same command without `--dry-run`. The user approves each sign-in in the browser.
+3. `check` for the fresh-process identity check, and `scope` to limit a Codex repo to one workspace. Both are in the [router README](router/README.md), with naming, saved IDs, recovery limits, and known limitations.
+4. Optionally, `install-skill` installs the shorter `linear-workspace-router` skill into the client's skill folder for later checks. It writes into the user's skill folders, so ask first.
+
+### Manual fallback
+
+Use these steps only when `node` is unavailable, the client is not Codex or Claude Code, or the user asks for them. They are what the router automates. Follow them exactly.
 
 Work on one client and one workspace at a time.
 
 1. Add only the planned named server. For an existing Codex connection, follow the atomic replacement and rollback steps in [Codex setup](references/codex.md). Never remove its global definition before replacing it.
 2. For Codex, set `default_tools_approval_mode = "writes"` only in that named server's config block.
 3. Tell the user which Linear workspace to select.
-   For an `mcp-remote` bridge, include `--authorize-param workspace=<alias>` so the OAuth URL identifies the connection. This marker does not select a workspace in Linear and Linear's consent page does not show it. To make the workspace visible on screen, run the bridge through the optional wrapper in [`router/`](https://github.com/switmer/linear-multi-workspace-setup/tree/main/router): it opens one page titled with the workspace name and a "Continue to Linear for <WORKSPACE>" button in place of the raw Linear tab. Keep the server name separate from the credential folder (for example server `linear-onroster`, folder `linear-roster`), and never add a second entry for a login folder a client already uses.
+   For an `mcp-remote` bridge, include `--authorize-param workspace=<alias>` so the OAuth URL identifies the connection. This marker does not select a workspace in Linear, and Linear's consent page does not show it. A plain bridge opens Linear's raw sign-in address with no visible workspace name. The router's wrapper opens a labeled page first instead. Keep the server name separate from the login folder (for example server `linear-onroster`, folder `linear-roster`), and never add a second entry for a login folder a client already uses.
 4. Start that server's OAuth flow separately and pause for human consent.
 5. If the selected workspace is wrong, cancel or log out only that named server. Do not continue.
 6. Do not alter unrelated MCP servers or plugins. Handle the bundled Linear plugin only during the repo-scoping step and only with user approval.
@@ -75,7 +102,7 @@ For each Codex repo that maps to one Linear workspace, make sure it exposes only
 1. Read the repo's durable instructions and the confirmed workspace map. Never choose from the repo name, team names, or the active browser workspace alone.
 2. From the repo, inspect `codex mcp list` and `codex plugin list --json`.
 3. Before writing repo overrides, confirm every referenced server has a complete global definition and a valid merged transport, even when disabling it. Stop without writing overrides if discovery fails or a command/URL is missing. After verifying the named connections, set each Linear server to `enabled = false` in the Codex user config. Add the smallest repo `.codex/config.toml` override: enable the intended named server and disable every other known Linear server. Preserve unrelated settings. This keeps unscoped repos from starting every Linear connection.
-4. Inspect every installed `linear@…` plugin, including `linear@openai-curated-remote`; an old-ID-only check can falsely pass. Unreadable or unknown plugin state fails verification. When named direct servers are the approved route, ask before disabling the bundled Linear plugin in the user config. Do not rely on a repo-local plugin override unless a fresh native check proves it worked.
+4. Inspect every installed `linear@…` plugin, including `linear@openai-curated-remote`; an old-ID-only check can falsely pass. Unreadable or unknown plugin state fails verification. When named direct servers are the approved route, ask before disabling the bundled Linear plugin in the user config. If a remote plugin still reports enabled, `codex plugin remove <pluginId>` is the supported fix. Do not rely on a repo-local plugin override unless a fresh native check proves it worked.
 5. From fresh Codex processes, confirm that an unscoped directory has no enabled Linear server, then confirm that the repo has only the intended named server enabled and the bundled Linear plugin disabled or absent. Check that `get_workspace` returns the expected workspace ID and name.
 6. Stop before Linear writes if the repo is untrusted, the route is unclear, another Linear connection remains exposed, or workspace identity does not match.
 7. Restart existing panes after a config change because they keep their startup tool list.
@@ -117,6 +144,10 @@ List non-Linear routes below the table. State any limitation or unverified item 
 - Different MCP server names do not prove separate authentication.
 - Flag-only project entries need complete server definitions to inherit. Removing a global definition can break config discovery even when the project disables that server.
 - A config parse error calls for transport repair, not repeated login/setup. Restore config after failed replacement; never claim that config rollback restores OAuth credentials.
+- Recovery is not the same in both clients. The router restores a Codex config when verification fails. For Claude Code it guarantees only that a failed write leaves the old entry; if verification fails afterward, the new entry stays and a timestamped `~/.claude.json.router-backup-*` file holds the previous config.
+- Permission, sign-in, config, and model errors are four different problems. A refused tool call needs an allow-list or approval fix, a parse error needs config repair, and a rejected default model needs `--model`. Only a missing or unrefreshable login needs a new sign-in. Never start OAuth to fix the others. See [troubleshooting](references/troubleshooting.md).
+- A healthy saved login reconnects without a browser. If `check` opens a sign-in page, that server has no usable login.
+- The sign-in page can keep a working button for a request whose process has exited, when a new process takes over the same local port within a fraction of a second. Use the page with the newest "Opened" time and close older ones. Known issue, not fixed; see the [router README](router/README.md).
 - Recheck every previous connection after each new login.
 - Never treat team names alone as immutable workspace identity.
 - Do not create Linear connections for work areas that use Jira or another tracker.

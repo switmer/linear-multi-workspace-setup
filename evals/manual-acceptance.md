@@ -61,3 +61,7 @@ These cases test config and reporting only. They do not prove OAuth isolation or
 - [ ] A saved workspace ID mismatch fails with both IDs and leaves the saved pin unchanged; a display-name change with the same ID passes.
 - [ ] `check --model <name>` runs verification with that model; without it the client's own setting is used.
 - [ ] `pins.json` and `names.json` are not tracked by Git.
+- [ ] `roster` is named `linear-onroster` in both clients while its login folder stays `~/.mcp-auth/linear-roster`; a re-run adds no second Roster entry.
+- [ ] A refused tool call, a parse error, and a rejected default model are each reported as their own problem, and none of them starts a sign-in.
+- [ ] A healthy saved login reconnects with no browser tab; a dry run and `check` open none.
+- [ ] Known issue (not fixed): after a quick takeover of the same local port, an old sign-in page can keep a working button. Confirm the docs say so and that the newest page is the one to use.
